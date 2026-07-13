@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mundialito2026-BronxScore</title>
+    <title>BronxScore</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -36,7 +36,6 @@
             position: relative;
         }
 
-        /* BOTÓN FLOTANTE PARA MENÚ (MÓVIL) */
         .menu-toggle {
             display: none;
             position: fixed;
@@ -53,7 +52,6 @@
             box-shadow: 0 4px 10px rgba(0, 204, 102, 0.3);
         }
 
-        /* SIDEBAR ESTILO SCORE7 */
         .sidebar {
             width: 260px;
             background-color: var(--bg-sidebar);
@@ -115,7 +113,6 @@
             padding-left: 20px;
         }
 
-        /* CAPA OSCURA PARA EL MÓVIL AL ABRIR EL MENÚ */
         .sidebar-overlay {
             display: none;
             position: fixed;
@@ -127,7 +124,6 @@
             z-index: 999;
         }
 
-        /* CONTENIDO PRINCIPAL */
         .main-content {
             flex-grow: 1;
             display: flex;
@@ -155,7 +151,6 @@
             margin: 0 auto;
         }
 
-        /* PESTAÑAS SUB-MENÚ */
         .tabs-header {
             display: flex;
             gap: 24px;
@@ -178,7 +173,6 @@
             border-bottom-color: var(--score7-green);
         }
 
-        /* MODELO DE TABLAS */
         .groups-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -202,7 +196,6 @@
             letter-spacing: 0.5px;
         }
 
-        /* CONTENEDOR PARA HACER LA TABLA SCROLLABLE EN CELULARES */
         .table-responsive {
             width: 100%;
             overflow-x: auto;
@@ -353,27 +346,44 @@
             background-color: var(--score7-green-hover);
         }
 
-        /* INTERFAZ DE JORNADAS / CALENDARIO (ESTILO SCORE7) */
+        /* SECCIONES DE JORNADAS DE GRUPOS */
+        .jornadas-layout {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+        }
+
+        .column-jornadas-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
         .fixtures-container {
             display: flex;
             flex-direction: column;
-            gap: 30px;
+            gap: 24px;
         }
 
         .jornada-block {
             background-color: var(--bg-card);
             border: 1px solid var(--border-color);
             border-radius: 8px;
-            padding: 24px;
+            padding: 20px;
         }
 
         .jornada-header {
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 700;
             color: var(--score7-green);
             border-bottom: 1px solid var(--border-color);
-            padding-bottom: 12px;
-            margin-bottom: 16px;
+            padding-bottom: 8px;
+            margin-bottom: 12px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
@@ -381,14 +391,14 @@
         .matches-list {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 10px;
         }
 
         .fixture-match-row {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 12px 20px;
+            padding: 10px 16px;
             background-color: rgba(255, 255, 255, 0.01);
             border: 1px solid var(--border-color);
             border-radius: 6px;
@@ -396,36 +406,39 @@
 
         .fixture-team {
             flex: 1;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .fixture-team.team-local {
             text-align: right;
-            padding-right: 15px;
+            padding-right: 12px;
         }
 
         .fixture-team.team-visitante {
             text-align: left;
-            padding-left: 15px;
+            padding-left: 12px;
         }
 
         .fixture-score-inputs {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             background-color: var(--bg-body);
-            padding: 4px 8px;
+            padding: 2px 6px;
             border-radius: 6px;
             border: 1px solid var(--border-color);
         }
 
         .fixture-score-inputs span {
             color: var(--text-muted);
-            font-size: 12px;
+            font-size: 11px;
         }
 
-        /* INTERFAZ ELIMINATORIA (BRACKETS) */
+        /* INTERFAZ ELIMINATORIA */
         .bracket-wrapper {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -498,7 +511,6 @@
             font-style: italic;
         }
 
-        /* RESPONSIVE DESIGN */
         @media (max-width: 900px) {
             .menu-toggle {
                 display: block;
@@ -525,7 +537,7 @@
                 padding: 20px;
             }
 
-            .groups-grid {
+            .groups-grid, .jornadas-layout {
                 grid-template-columns: 1fr;
                 gap: 20px;
             }
@@ -546,7 +558,7 @@
 
             .fixture-match-row {
                 flex-direction: column;
-                gap: 8px;
+                gap: 6px;
                 text-align: center;
             }
 
@@ -572,7 +584,6 @@
             <div class="nav-item active" id="nav-grupos" onclick="switchMainView('grupos')">
                 <i class="fa-solid fa-list-ol"></i> Tabla de Posiciones
             </div>
-            <!-- NUEVA OPCIÓN EN LA BARRA DE TAREAS -->
             <div class="nav-item" id="nav-jornadas" onclick="switchMainView('jornadas')">
                 <i class="fa-solid fa-calendar-days"></i> Partidos y Jornadas
             </div>
@@ -584,7 +595,7 @@
         </div>
     </div>
 
-    <!-- CONTENIDO -->
+    <!-- CONTENIDO PRINCIPAL -->
     <div class="main-content">
         <div class="top-header">
             <div class="tournament-title">Mundialito 2000</div>
@@ -654,57 +665,23 @@
                 </div>
             </div>
 
-            <!-- NUEVA VISTA 2: PARTIDOS Y JORNADAS DE GRUPO -->
+            <!-- VISTA 2: PARTIDOS Y JORNADAS (7 JORNADAS GRUPO A Y GRUPO B - 3 PARTIDOS C/U) -->
             <div id="view-jornadas" class="view-section">
-                <div class="fixtures-container">
+                <div class="jornadas-layout">
                     
-                    <!-- JORNADA 1 -->
-                    <div class="jornada-block">
-                        <div class="jornada-header">Jornada 1</div>
-                        <div class="matches-list">
-                            <div class="fixture-match-row">
-                                <div class="fixture-team team-local" id="j1-m1-l">Jugador 1</div>
-                                <div class="fixture-score-inputs">
-                                    <input type="number" class="input-stat" placeholder="-" id="sc-j1-m1-l">
-                                    <span>vs</span>
-                                    <input type="number" class="input-stat" placeholder="-" id="sc-j1-m1-v">
-                                </div>
-                                <div class="fixture-team team-visitante" id="j1-m1-v">Jugador 2</div>
-                            </div>
-                            <div class="fixture-match-row">
-                                <div class="fixture-team team-local" id="j1-m2-l">Jugador 3</div>
-                                <div class="fixture-score-inputs">
-                                    <input type="number" class="input-stat" placeholder="-" id="sc-j1-m2-l">
-                                    <span>vs</span>
-                                    <input type="number" class="input-stat" placeholder="-" id="sc-j1-m2-v">
-                                </div>
-                                <div class="fixture-team team-visitante" id="j1-m2-v">Jugador 4</div>
-                            </div>
+                    <!-- COLUMNA GRUPO A -->
+                    <div>
+                        <div class="column-jornadas-title">Grupo A</div>
+                        <div class="fixtures-container" id="contenedor-jornadas-a">
+                            <!-- Inyectado dinámicamente por JavaScript -->
                         </div>
                     </div>
 
-                    <!-- JORNADA 2 -->
-                    <div class="jornada-block">
-                        <div class="jornada-header">Jornada 2</div>
-                        <div class="matches-list">
-                            <div class="fixture-match-row">
-                                <div class="fixture-team team-local" id="j2-m1-l">Jugador 1</div>
-                                <div class="fixture-score-inputs">
-                                    <input type="number" class="input-stat" placeholder="-" id="sc-j2-m1-l">
-                                    <span>vs</span>
-                                    <input type="number" class="input-stat" placeholder="-" id="sc-j2-m1-v">
-                                </div>
-                                <div class="fixture-team team-visitante" id="j2-m1-v">Jugador 3</div>
-                            </div>
-                            <div class="fixture-match-row">
-                                <div class="fixture-team team-local" id="j2-m2-l">Jugador 2</div>
-                                <div class="fixture-score-inputs">
-                                    <input type="number" class="input-stat" placeholder="-" id="sc-j2-m2-l">
-                                    <span>vs</span>
-                                    <input type="number" class="input-stat" placeholder="-" id="sc-j2-m2-v">
-                                </div>
-                                <div class="fixture-team team-visitante" id="j2-m2-v">Jugador 4</div>
-                            </div>
+                    <!-- COLUMNA GRUPO B -->
+                    <div>
+                        <div class="column-jornadas-title">Grupo B</div>
+                        <div class="fixtures-container" id="contenedor-jornadas-b">
+                            <!-- Inyectado dinámicamente por JavaScript -->
                         </div>
                     </div>
 
@@ -774,7 +751,7 @@
                             </div>
                             <div class="match-team-row">
                                 <div class="match-team-info placeholder-text" id="s1-t2">Ganador P2</div>
-                                <input type="number" class="input-stat" placeholder="0" id="sc-s1-t2" oninput="brackets()">
+                                <input type="number" class="input-stat" placeholder="0" id="sc-s1-t2" oninput="calcularBrackets()">
                             </div>
                         </div>
                         <div class="match-card">
@@ -813,24 +790,25 @@
     </div>
 
     <script>
+        // Inicialización de los 14 jugadores (7 por grupo)
         let datosTorneo = {
             A: [
-                {id: 1, nombre: "Jugador 1", pj:0, g:0, e:0, p:0, gf:0, gc:0, gd:0, pts:0, img:""},
-                {id: 2, nombre: "Jugador 2", pj:0, g:0, e:0, p:0, gf:0, gc:0, gd:0, pts:0, img:""},
-                {id: 3, nombre: "Jugador 3", pj:0, g:0, e:0, p:0, gf:0, gc:0, gd:0, pts:0, img:""},
-                {id: 4, nombre: "Jugador 4", pj:0, g:0, e:0, p:0, gf:0, gc:0, gd:0, pts:0, img:""},
-                {id: 5, nombre: "Jugador 5", pj:0, g:0, e:0, p:0, gf:0, gc:0, gd:0, pts:0, img:""},
-                {id: 6, nombre: "Jugador 6", pj:0, g:0, e:0, p:0, gf:0, gc:0, gd:0, pts:0, img:""},
-                {id: 7, nombre: "Jugador 7", pj:0, g:0, e:0, p:0, gf:0, gc:0, gd:0, pts:0, img:""}
+                {id: 1, nombre: "Jugador A1", pj:0, g:0, e:0, p:0, gf:0, gc:0, gd:0, pts:0, img:""},
+                {id: 2, nombre: "Jugador A2", pj:0, g:0, e:0, p:0, gf:0, gc:0, gd:0, pts:0, img:""},
+                {id: 3, nombre: "Jugador A3", pj:0, g:0, e:0, p:0, gf:0, gc:0, gd:0, pts:0, img:""},
+                {id: 4, nombre: "Jugador A4", pj:0, g:0, e:0, p:0, gf:0, gc:0, gd:0, pts:0, img:""},
+                {id: 5, nombre: "Jugador A5", pj:0, g:0, e:0, p:0, gf:0, gc:0, gd:0, pts:0, img:""},
+                {id: 6, nombre: "Jugador A6", pj:0, g:0, e:0, p:0, gf:0, gc:0, gd:0, pts:0, img:""},
+                {id: 7, nombre: "Jugador A7", pj:0, g:0, e:0, p:0, gf:0, gc:0, gd:0, pts:0, img:""}
             ],
             B: [
-                {id: 8, nombre: "Jugador 8", pj:0, g:0, e:0, p:0, gf:0, gc:0, gd:0, pts:0, img:""},
-                {id: 9, nombre: "Jugador 9", pj:0, g:0, e:0, p:0, gf:0, gc:0, gd:0, pts:0, img:""},
-                {id: 10, nombre: "Jugador 10", pj:0, g:0, e:0, p:0, gf:0, gc:0, gd:0, pts:0, img:""},
-                {id: 11, nombre: "Jugador 11", pj:0, g:0, e:0, p:0, gf:0, gc:0, gd:0, pts:0, img:""},
-                {id: 12, nombre: "Jugador 12", pj:0, g:0, e:0, p:0, gf:0, gc:0, gd:0, pts:0, img:""},
-                {id: 13, nombre: "Jugador 13", pj:0, g:0, e:0, p:0, gf:0, gc:0, gd:0, pts:0, img:""},
-                {id: 14, nombre: "Jugador 14", pj:0, g:0, e:0, p:0, gf:0, gc:0, gd:0, pts:0, img:""}
+                {id: 8, nombre: "Jugador B1", pj:0, g:0, e:0, p:0, gf:0, gc:0, gd:0, pts:0, img:""},
+                {id: 9, nombre: "Jugador B2", pj:0, g:0, e:0, p:0, gf:0, gc:0, gd:0, pts:0, img:""},
+                {id: 10, nombre: "Jugador B3", pj:0, g:0, e:0, p:0, gf:0, gc:0, gd:0, pts:0, img:""},
+                {id: 11, nombre: "Jugador B4", pj:0, g:0, e:0, p:0, gf:0, gc:0, gd:0, pts:0, img:""},
+                {id: 12, nombre: "Jugador B5", pj:0, g:0, e:0, p:0, gf:0, gc:0, gd:0, pts:0, img:""},
+                {id: 13, nombre: "Jugador B6", pj:0, g:0, e:0, p:0, gf:0, gc:0, gd:0, pts:0, img:""},
+                {id: 14, nombre: "Jugador B7", pj:0, g:0, e:0, p:0, gf:0, gc:0, gd:0, pts:0, img:""}
             ]
         };
 
@@ -874,7 +852,6 @@
                     tbody.appendChild(tr);
                 });
             });
-            actualizarNombresCalendario();
         }
 
         function actualizarCampo(input, grupo, id, campo) {
@@ -889,20 +866,82 @@
             if (campo === 'gf' || campo === 'gc') {
                 jugador.gd = jugador.gf - jugador.gc;
             }
+            
+            // Refrescar las etiquetas del calendario si se editan nombres en las tablas
+            if (campo === 'nombre') {
+                actualizarEtiquetasCalendario();
+            }
         }
 
-        // SINCRONIZA LOS NOMBRE DE LAS TABLAS AL CALENDARIO DE JORNADAS
-        function actualizarNombresCalendario() {
-            // Jornada 1
-            document.getElementById('j1-m1-l').innerText = datosTorneo['A'][0].nombre;
-            document.getElementById('j1-m1-v').innerText = datosTorneo['A'][1].nombre;
-            document.getElementById('j1-m2-l').innerText = datosTorneo['A'][2].nombre;
-            document.getElementById('j1-m2-v').innerText = datosTorneo['A'][3].nombre;
-            // Jornada 2
-            document.getElementById('j2-m1-l').innerText = datosTorneo['A'][0].nombre;
-            document.getElementById('j2-m1-v').innerText = datosTorneo['A'][2].nombre;
-            document.getElementById('j2-m2-l').innerText = datosTorneo['A'][1].nombre;
-            document.getElementById('j2-m2-v').innerText = datosTorneo['A'][3].nombre;
+        // CONSTRUCCIÓN MANUAL DE LAS 7 JORNADAS CON Sus 3 PARTIDOS RESPECTIVOS
+        function generarCalendariosHTML() {
+            ['A', 'B'].forEach(grupo => {
+                const contenedor = document.getElementById(`contenedor-jornadas-${grupo.toLowerCase()}`);
+                contenedor.innerHTML = "";
+
+                // Creamos los bloques para 7 jornadas
+                for (let j = 1; j <= 7; j++) {
+                    const bloqueJornada = document.createElement('div');
+                    bloqueJornada.className = 'jornada-block';
+                    
+                    let matchesHTML = '';
+                    // 3 partidos por jornada
+                    for (let m = 1; m <= 3; m++) {
+                        matchesHTML += `
+                            <div class="fixture-match-row">
+                                <div class="fixture-team team-local" id="text-${grupo}-j${j}-m${m}-l">Local</div>
+                                <div class="fixture-score-inputs">
+                                    <input type="number" class="input-stat" placeholder="-" id="input-${grupo}-j${j}-m${m}-l">
+                                    <span>vs</span>
+                                    <input type="number" class="input-stat" placeholder="-" id="input-${grupo}-j${j}-m${m}-v">
+                                </div>
+                                <div class="fixture-team team-visitante" id="text-${grupo}-j${j}-m${m}-v">Visitante</div>
+                            </div>
+                        `;
+                    }
+
+                    bloqueJornada.innerHTML = `
+                        <div class="jornada-header">Jornada ${j}</div>
+                        <div class="matches-list">
+                            ${matchesHTML}
+                        </div>
+                    `;
+                    contenedor.appendChild(bloqueJornada);
+                }
+            });
+            actualizarEtiquetasCalendario();
+        }
+
+        // Asigna dinámicamente los jugadores de las listas a los contenedores correspondientes (puedes ajustar el orden de los cruces a tu gusto)
+        function actualizarEtiquetasCalendario() {
+            ['A', 'B'].forEach(grupo => {
+                const lista = datosTorneo[grupo];
+                // Mapeo básico referencial de las 7 jornadas (Cruces manuales estilo todos contra todos estándar)
+                const cruces = {
+                    1: [[0,1], [2,3], [4,5]], // Descansa index 6
+                    2: [[0,2], [1,4], [3,6]], // Descansa index 5
+                    3: [[0,3], [1,5], [2,6]], // Descansa index 4
+                    4: [[0,4], [2,5], [1,6]], // Descansa index 3
+                    5: [[0,5], [3,4], [5,6]], // Descansa index 1, etc.
+                    6: [[1,2], [3,5], [0,6]], 
+                    7: [[1,3], [2,4], [0,5]]
+                };
+
+                for(let j = 1; j <= 7; j++) {
+                    for(let m = 1; m <= 3; m++) {
+                        let idxL = cruces[j][m-1][0];
+                        let idxV = cruces[j][m-1][1];
+                        
+                        let localEl = document.getElementById(`text-${grupo}-j${j}-m${m}-l`);
+                        let visitEl = document.getElementById(`text-${grupo}-j${j}-m${m}-v`);
+                        
+                        if(localEl && visitEl) {
+                            localEl.innerText = lista[idxL] ? lista[idxL].nombre : "Jugador";
+                            visitEl.innerText = lista[idxV] ? lista[idxV].nombre : "Jugador";
+                        }
+                    }
+                }
+            });
         }
 
         function cargarBandera(input, grupo, id) {
@@ -927,7 +966,9 @@
             });
 
             renderizarTablas();
+            actualizarEtiquetasCalendario();
 
+            // Cruces de cuartos automáticos según tablas
             document.getElementById('c1-t1').innerText = "1º " + datosTorneo['A'][0].nombre;
             document.getElementById('c1-t2').innerText = "4º " + datosTorneo['B'][3].nombre;
 
@@ -940,7 +981,7 @@
             document.getElementById('c4-t1').innerText = "2º " + datosTorneo['A'][1].nombre;
             document.getElementById('c4-t2').innerText = "3º " + datosTorneo['B'][2].nombre;
 
-            alert("¡Estructuras recalculadas según Score7! Posiciones ordenadas y cruces listos.");
+            alert("Estructuras guardadas. Posiciones de los grupos ordenadas y cruces listos.");
             calcularBrackets();
         }
 
@@ -1011,7 +1052,7 @@
 
         window.onload = function() {
             renderizarTablas();
-            procesarTablasYCruces();
+            generarCalendariosHTML();
         };
     </script>
 </body>
