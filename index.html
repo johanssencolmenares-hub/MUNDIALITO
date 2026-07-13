@@ -1125,7 +1125,6 @@
         const CLAVE_SECRETA = "admin123";
         let isAdmin = false;
 
-        // ESTRUCTURA CORREGIDA CON LOS JUGADORES DEL GRUPO A Y GRUPO B
         const estructuraLimpia = {
             A: [
                 {id: 1, nombre: "Dani", pj:0, g:0, e:0, p:0, gf:0, gc:0, gd:0, pts:0, img:""},
@@ -1237,12 +1236,12 @@
                                 </div>
                             </div>
                         </td>
-                        <td><input type="number" class="input-stat" value="${jugador.pj}" onchange="actualizarCampo(this, '${grupo}', ${jugador.id}, 'pj')"></td>
-                        <td><input type="number" class="input-stat" value="${jugador.g}" onchange="actualizarCampo(this, '${grupo}', ${jugador.id}, 'g')"></td>
-                        <td><input type="number" class="input-stat" value="${jugador.e}" onchange="actualizarCampo(this, '${grupo}', ${jugador.id}, 'e')"></td>
-                        <td><input type="number" class="input-stat" value="${jugador.p}" onchange="actualizarCampo(this, '${grupo}', ${jugador.id}, 'p')"></td>
-                        <td><input type="number" class="input-stat" value="${jugador.gf}" onchange="actualizarCampo(this, '${grupo}', ${jugador.id}, 'gf')"></td>
-                        <td><input type="number" class="input-stat" value="${jugador.gc}" onchange="actualizarCampo(this, '${grupo}', ${jugador.id}, 'gc')"></td>
+                        <td><input type="number" class="input-stat" value="${jugador.pj}" readonly></td>
+                        <td><input type="number" class="input-stat" value="${jugador.g}" readonly></td>
+                        <td><input type="number" class="input-stat" value="${jugador.e}" readonly></td>
+                        <td><input type="number" class="input-stat" value="${jugador.p}" readonly></td>
+                        <td><input type="number" class="input-stat" value="${jugador.gf}" readonly></td>
+                        <td><input type="number" class="input-stat" value="${jugador.gc}" readonly></td>
                         <td class="stat-bold">${jugador.gd}</td>
                         <td class="stat-bold" style="color: var(--score7-green);">${jugador.pts}</td>
                     `;
@@ -1256,16 +1255,8 @@
             let jugador = datosTorneo[grupo].find(j => j.id === id);
             if(!jugador) return;
             
-            if (campo !== 'nombre') {
-                valor = parseInt(valor) || 0;
-            }
-            jugador[campo] = valor;
-
-            if (campo === 'gf' || campo === 'gc') {
-                jugador.gd = jugador.gf - jugador.gc;
-            }
-            
             if (campo === 'nombre') {
+                jugador.nombre = valor;
                 actualizarEtiquetasCalendario();
                 const wrapperEstrellas = document.getElementById(`estrellas-j-${id}`);
                 if(wrapperEstrellas) wrapperEstrellas.innerHTML = obtenerEstrellasJugador(valor);
@@ -1407,8 +1398,75 @@
             }
         }
 
+        // NUEVA FUNCIÓN MEJORADA: HACE TODO EL TRABAJO MATEMÁTICO POR TI
         function procesarTablasYCruces() {
+            const cruces = {
+                1: [[0,1], [2,3], [4,5]], 
+                2: [[0,2], [1,4], [3,6]], 
+                3: [[0,3], [1,5], [2,6]], 
+                4: [[0,4], [2,5], [1,6]], 
+                5: [[0,5], [3,4], [5,6]], 
+                6: [[1,2], [3,5], [0,6]], 
+                7: [[1,3], [2,4], [0,5]]
+            };
+
             ['A', 'B'].forEach(grupo => {
+                // 1. Resetear estadísticas para calcular desde cero limpiamente
+                datosTorneo[grupo].forEach(j => {
+                    j.pj = 0; j.g = 0; j.e = 0; j.p = 0; j.gf = 0; j.gc = 0; j.gd = 0; j.pts = 0;
+                });
+
+                // 2. Leer los goles directo de los inputs guardados en la vista Jornadas
+                for (let j = 1; j <= 7; j++) {
+                    for (let m = 1; m <= 3; m++) {
+                        let idL = `input-${grupo}-j${j}-m${m}-l`;
+                        let idV = `input-${grupo}-j${j}-m${m}-v`;
+
+                        let valL = localStorage.getItem(`superligaa_cal_${idL}`);
+                        let valV = localStorage.getItem(`superligaa_cal_${idV}`);
+
+                        // Si ambos casilleros tienen goles válidos, procesamos el partido
+                        if (valL !== null && valV !== null && valL !== "" && valV !== "") {
+                            let golesL = parseInt(valL);
+                            let golesV = parseInt(valV);
+
+                            let idxL = cruces[j][m-1][0];
+                            let idxV = cruces[j][m-1][1];
+
+                            let jugadorL = datosTorneo[grupo][idxL];
+                            let jugadorV = datosTorneo[grupo][idxV];
+
+                            if (jugadorL && jugadorV) {
+                                jugadorL.pj++;
+                                jugadorV.pj++;
+                                jugadorL.gf += golesL;
+                                jugadorL.gc += golesV;
+                                jugadorV.gf += golesV;
+                                jugadorV.gc += golesL;
+
+                                // LÓGICA AUTOMÁTICA DE PUNTOS REQUERIDA (3, 1, 0)
+                                if (golesL > golesV) {
+                                    jugadorL.g++;
+                                    jugadorL.pts += 3;
+                                    jugadorV.p++;
+                                } else if (golesV > golesL) {
+                                    jugadorV.g++;
+                                    jugadorV.pts += 3;
+                                    jugadorL.p++;
+                                } else {
+                                    jugadorL.e++;
+                                    jugadorV.e++;
+                                    jugadorL.pts += 1;
+                                    jugadorV.pts += 1;
+                                }
+                                jugadorL.gd = jugadorL.gf - jugadorL.gc;
+                                jugadorV.gd = jugadorV.gf - jugadorV.gc;
+                            }
+                        }
+                    }
+                }
+
+                // 3. Ordenar las posiciones según rendimiento oficial
                 datosTorneo[grupo].sort((a, b) => {
                     if (b.pts !== a.pts) return b.pts - a.pts;
                     if (b.gd !== a.gd) return b.gd - a.gd;
@@ -1420,6 +1478,7 @@
             renderizarTablas();
             actualizarEtiquetasCalendario();
 
+            // Configurar cruces automáticamente para eliminatorias
             configurarCeldaBracket('c1-t1', datosTorneo['A'][0]);
             configurarCeldaBracket('c1-t2', datosTorneo['B'][3]);
             configurarCeldaBracket('c2-t1', datosTorneo['B'][1]);
@@ -1430,7 +1489,7 @@
             configurarCeldaBracket('c4-t2', datosTorneo['B'][2]);
 
             persistirEnLocalStorage();
-            alert("Estructuras y posiciones guardadas con éxito.");
+            alert("¡Tablas calculadas y actualizadas automáticamente desde las jornadas con éxito!");
             calcularBrackets();
         }
 
@@ -1438,11 +1497,18 @@
             const txtElement = document.getElementById(idFila);
             const imgElement = document.getElementById(idFila + "-img");
             
-            if(jugador) {
-                if(txtElement) txtElement.innerText = jugador.nombre;
-                imagenesBrackets[idFila] = jugador.img;
-                if(imgElement) imgElement.innerHTML = jugador.img ? `<img src="${jugador.img}">` : `<i class="fa-solid fa-flag"></i>`;
-                localStorage.setItem(`superligaa_txt_bracket_${idFila}`, jugador.nombre);
+            if(txtElement) {
+                if(jugador) {
+                    txtElement.innerText = jugador.nombre;
+                    imagenesBrackets[idFila] = jugador.img;
+                    if(imgElement) imgElement.innerHTML = jugador.img ? `<img src="${jugador.img}">` : `<i class="fa-solid fa-flag"></i>`;
+                    localStorage.setItem(`superligaa_txt_bracket_${idFila}`, jugador.nombre);
+                } else {
+                    txtElement.innerText = "Clasificado";
+                    imagenesBrackets[idFila] = "";
+                    if(imgElement) imgElement.innerHTML = `<i class="fa-solid fa-flag"></i>`;
+                    localStorage.setItem(`superligaa_txt_bracket_${idFila}`, "Clasificado");
+                }
             }
         }
 
