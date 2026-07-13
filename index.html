@@ -18,6 +18,8 @@
             --score7-green-hover: #00b355;
             --score7-green-alpha: rgba(0, 204, 102, 0.1);
             --bg-input-focus: #0b0d10;
+            --gold-color: #ffd700;
+            --gold-alpha: rgba(255, 215, 0, 0.1);
         }
 
         * {
@@ -147,7 +149,6 @@
             letter-spacing: -0.5px;
         }
 
-        /* BOTÓN DE MODO ADMINISTRADOR */
         .btn-admin-mode {
             background-color: transparent;
             border: 1px solid var(--border-color);
@@ -281,7 +282,6 @@
             flex-shrink: 0;
         }
         
-        /* Oculta el input file si no es admin */
         .img-circle-selector input[type="file"] {
             position: absolute;
             top: 0;
@@ -318,6 +318,17 @@
             text-align: left;
         }
 
+        .wrapper-nombre-estrellas {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .star-icon {
+            color: var(--gold-color);
+            font-size: 12px;
+        }
+
         .input-nombre {
             background: transparent;
             border: 1px solid transparent;
@@ -327,7 +338,7 @@
             width: 120px;
             padding: 4px 6px;
             border-radius: 4px;
-            pointer-events: none; /* Bloqueado por defecto */
+            pointer-events: none;
         }
 
         .input-stat {
@@ -339,10 +350,9 @@
             font-size: 14px;
             padding: 4px 2px;
             border-radius: 4px;
-            pointer-events: none; /* Bloqueado por defecto */
+            pointer-events: none;
         }
 
-        /* Habilitar inputs solo cuando la clase admin esté activa */
         body.admin-enabled .input-nombre,
         body.admin-enabled .input-stat {
             pointer-events: auto;
@@ -362,14 +372,14 @@
 
         .btn-guardar-container {
             grid-column: span 2;
-            display: none; /* Se oculta a los espectadores */
+            display: none;
             justify-content: flex-end;
             gap: 12px;
             margin-top: 20px;
         }
 
         body.admin-enabled .btn-guardar-container {
-            display: flex; /* Solo visible para el administrador */
+            display: flex;
         }
 
         .btn-guardar {
@@ -398,7 +408,6 @@
             background-color: #dc2626;
         }
 
-        /* SECCIONES DE JORNADAS Y ELIMINATORIAS */
         .jornadas-layout {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -515,7 +524,6 @@
             font-size: 11px;
         }
 
-        /* INTERFAZ ELIMINATORIA */
         .bracket-wrapper {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -589,74 +597,259 @@
             font-style: italic;
         }
 
+        /* --- ESTILOS COMPLEMENTARIOS: HISTORIAL DE CAMPEONES --- */
+        .header-historial {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 12px;
+        }
+
+        .btn-add-history {
+            background-color: var(--gold-color);
+            color: #0b0d10;
+            border: none;
+            padding: 8px 16px;
+            font-weight: 700;
+            font-size: 13px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        body.admin-enabled .btn-add-history {
+            display: inline-flex;
+        }
+
+        .btn-add-history:hover {
+            background-color: #e6c200;
+        }
+
+        .history-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
+        }
+
+        .history-card {
+            background: linear-gradient(135deg, #1c212c 0%, #151922 100%);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            position: relative;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .history-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--gold-color), #ffa500);
+        }
+
+        .history-card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .history-year {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--gold-color);
+        }
+
+        .input-historial-year {
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--gold-color);
+            font-size: 20px;
+            font-weight: 800;
+            width: 80px;
+            pointer-events: none;
+        }
+
+        .btn-delete-card {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        body.admin-enabled .btn-delete-card {
+            display: flex;
+        }
+
+        .btn-delete-card:hover {
+            background: #ef4444;
+            color: white;
+        }
+
+        .history-main-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .history-badge-container {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #242b35;
+            border: 2px dashed var(--gold-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .history-badge-container input[type="file"] {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+            display: none;
+        }
+
+        body.admin-enabled .history-badge-container input[type="file"] {
+            display: block;
+        }
+
+        .history-badge-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .history-badge-container i {
+            font-size: 20px;
+            color: var(--text-muted);
+        }
+
+        .history-details-inputs {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex-grow: 1;
+        }
+
+        .input-historial-text {
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-main);
+            font-size: 14px;
+            font-weight: 500;
+            padding: 2px 4px;
+            border-radius: 4px;
+            width: 100%;
+            pointer-events: none;
+        }
+
+        .input-historial-text.h-player {
+            font-size: 16px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        body.admin-enabled .input-historial-year,
+        body.admin-enabled .input-historial-text {
+            pointer-events: auto;
+            border-bottom: 1px dashed var(--border-color);
+        }
+
+        body.admin-enabled .input-historial-year:focus,
+        body.admin-enabled .input-historial-text:focus {
+            outline: none;
+            border-color: var(--score7-green);
+            background: var(--bg-input-focus);
+        }
+
+        .history-footer-stats {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 12px;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .h-stat-field {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .h-stat-field span {
+            font-size: 10px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .input-historial-stat {
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            font-size: 12px;
+            font-weight: 700;
+            width: 100px;
+            pointer-events: none;
+        }
+
+        body.admin-enabled .input-historial-stat {
+            pointer-events: auto;
+            border-bottom: 1px dashed var(--border-color);
+        }
+        body.admin-enabled .input-historial-stat:focus {
+            outline: none;
+            background: var(--bg-input-focus);
+        }
+
         @media (max-width: 900px) {
-            .menu-toggle {
-                display: block;
-            }
-
+            .menu-toggle { display: block; }
             .sidebar {
-                position: fixed;
-                top: 0;
-                left: 0;
-                height: 100vh;
-                transform: translateX(-100%);
-                box-shadow: 5px 0 15px rgba(0,0,0,0.5);
+                position: fixed; top: 0; left: 0; height: 100vh;
+                transform: translateX(-100%); box-shadow: 5px 0 15px rgba(0,0,0,0.5);
             }
-
-            .sidebar.open {
-                transform: translateX(0);
-            }
-
-            .top-header {
-                padding: 20px 20px 20px 70px;
-            }
-
-            .content-body {
-                padding: 20px;
-            }
-
-            .groups-grid, .jornadas-layout {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
-
-            .btn-guardar-container {
-                grid-column: span 1;
-                text-align: center;
-                flex-direction: column;
-            }
-
-            .btn-guardar {
-                width: 100%;
-            }
-
-            .bracket-wrapper {
-                grid-template-columns: 1fr;
-                gap: 30px;
-            }
-
-            .fixture-match-row {
-                flex-direction: column;
-                gap: 8px;
-                text-align: center;
-                padding: 14px;
-            }
-
-            .fixture-team {
-                width: 100%;
-            }
-
-            .fixture-team.team-local {
-                flex-direction: column-reverse;
-                justify-content: center;
-                text-align: center;
-            }
-
-            .fixture-team.team-visitante {
-                flex-direction: column;
-                justify-content: center;
-                text-align: center;
-            }
+            .sidebar.open { transform: translateX(0); }
+            .top-header { padding: 20px 20px 20px 70px; }
+            .content-body { padding: 20px; }
+            .groups-grid, .jornadas-layout { grid-template-columns: 1fr; gap: 20px; }
+            .btn-guardar-container { grid-column: span 1; text-align: center; flex-direction: column; }
+            .btn-guardar { width: 100%; }
+            .bracket-wrapper { grid-template-columns: 1fr; gap: 30px; }
+            .fixture-match-row { flex-direction: column; gap: 8px; text-align: center; padding: 14px; }
+            .fixture-team { width: 100%; }
+            .fixture-team.team-local { flex-direction: column-reverse; justify-content: center; }
+            .fixture-team.team-visitante { flex-direction: column; justify-content: center; }
+            .header-historial { flex-direction: column; gap: 12px; align-items: flex-start; }
+            .btn-add-history { width: 100%; justify-content: center; }
         }
     </style>
 </head>
@@ -682,13 +875,18 @@
             <div class="nav-item" id="nav-eliminatorio" onclick="switchMainView('eliminatorio')">
                 <i class="fa-solid fa-diagram-project"></i> Cuadro Eliminatorio
             </div>
+
+            <!-- NUEVA SECCIÓN DE HISTORIAL EN LA BARRA -->
+            <div class="nav-section-title">Historial</div>
+            <div class="nav-item" id="nav-historial" onclick="switchMainView('historial')">
+                <i class="fa-solid fa-crown"></i> Historial de Campeones
+            </div>
         </div>
     </div>
 
     <div class="main-content">
         <div class="top-header">
-            <div class="tournament-title">Mundialito 2000</div>
-            <!-- BOTÓN CANDADO PARA ACTIVAR EL PANEL DE CONTROL -->
+            <div class="tournament-title" id="main-view-title">Mundialito 2000</div>
             <button class="btn-admin-mode" id="btn-candado-admin" onclick="toggleModoAdmin()">
                 <i class="fa-solid fa-lock"></i> <span id="text-candado">Modo Espectador</span>
             </button>
@@ -696,10 +894,11 @@
 
         <div class="content-body">
             
-            <div class="tabs-header">
+            <div class="tabs-header" id="main-tabs-header">
                 <div class="tab-btn active-tab" id="tab-grupos-btn" onclick="switchMainView('grupos')">Fase de Grupos</div>
                 <div class="tab-btn" id="tab-jornadas-btn" onclick="switchMainView('jornadas')">Partidos / Jornadas</div>
                 <div class="tab-btn" id="tab-eliminatorio-btn" onclick="switchMainView('eliminatorio')">Cuadro Eliminatorio</div>
+                <div class="tab-btn" id="tab-historial-btn" onclick="switchMainView('historial')">Historial de Campeones</div>
             </div>
 
             <!-- VISTA 1: TABLAS -->
@@ -775,7 +974,6 @@
             <!-- VISTA 3: ELIMINATORIAS -->
             <div id="view-eliminatorio" class="view-section">
                 <div class="bracket-wrapper">
-                    <!-- CUARTOS DE FINAL -->
                     <div class="bracket-column">
                         <div class="bracket-column-title">Cuartos de Final</div>
                         <div class="match-card">
@@ -848,7 +1046,6 @@
                         </div>
                     </div>
 
-                    <!-- SEMIFINALES -->
                     <div class="bracket-column">
                         <div class="bracket-column-title">Semifinales</div>
                         <div class="match-card">
@@ -887,7 +1084,6 @@
                         </div>
                     </div>
 
-                    <!-- FINAL -->
                     <div class="bracket-column">
                         <div class="bracket-column-title">Final</div>
                         <div class="match-card">
@@ -912,11 +1108,23 @@
                 </div>
             </div>
 
+            <!-- VISTA 4: NUEVA SECCIÓN DE HISTORIAL DE CAMPEONES -->
+            <div id="view-historial" class="view-section">
+                <div class="header-historial">
+                    <h2>Salón de la Fama - Historial de Campeones</h2>
+                    <button class="btn-add-history" onclick="agregarNuevoCampeonHistorial()">
+                        <i class="fa-solid fa-plus"></i> Añadir Campeón
+                    </button>
+                </div>
+                <div class="history-grid" id="history-grid-container">
+                    <!-- Se rellena de manera dinámica -->
+                </div>
+            </div>
+
         </div>
     </div>
 
     <script>
-        // CONTRASEÑA DE ADMINISTRADOR (Cámbiala aquí si lo deseas)
         const CLAVE_SECRETA = "admin123";
         let isAdmin = false;
 
@@ -950,7 +1158,9 @@
             "f-t1": "", "f-t2": ""
         };
 
-        // FUNCIÓN DE SEGURIDAD: Alterna entre Modo Espectador y Admin
+        // ARRAY PARA COMPONENTES DEL HISTORIAL HISTÓRICO
+        let listaHistorialCampeones = [];
+
         function toggleModoAdmin() {
             if (!isAdmin) {
                 let intento = prompt("Introduce la contraseña de administrador para editar:");
@@ -963,7 +1173,6 @@
                     alert("Contraseña incorrecta. Acceso denegado.");
                 }
             } else {
-                // Cerrar sesión de administrador
                 isAdmin = false;
                 document.body.classList.remove("admin-enabled");
                 document.getElementById("btn-candado-admin").classList.remove("active-admin");
@@ -981,6 +1190,18 @@
         function persistirEnLocalStorage() {
             localStorage.setItem('superligaa_datosTorneo', JSON.stringify(datosTorneo));
             localStorage.setItem('superligaa_imagenesBrackets', JSON.stringify(imagenesBrackets));
+            localStorage.setItem('superligaa_historialCampeones', JSON.stringify(listaHistorialCampeones));
+        }
+
+        // FUNCIÓN AUXILIAR: Cuenta cuántas estrellas doradas tiene un mánager según el historial
+        function obtenerEstrellasJugador(nombreJugador) {
+            if (!nombreJugador) return "";
+            const totalTitulos = listaHistorialCampeones.filter(h => h.jugador.trim().toLowerCase() === nombreJugador.trim().toLowerCase()).length;
+            let estrellasHTML = "";
+            for (let i = 0; i < totalTitulos; i++) {
+                estrellasHTML += `<i class="fa-solid fa-star star-icon"></i>`;
+            }
+            return estrellasHTML;
         }
 
         function renderizarTablas() {
@@ -993,6 +1214,8 @@
                     const tr = document.createElement('tr');
                     tr.className = esTop4;
                     
+                    const estrellas = obtenerEstrellasJugador(jugador.nombre);
+                    
                     tr.innerHTML = `
                         <td>${index + 1}</td>
                         <td>
@@ -1001,7 +1224,10 @@
                                     ${jugador.img ? `<img src="${jugador.img}">` : `<i class="fa-solid fa-flag"></i>`}
                                     <input type="file" onchange="cargarBandera(this, '${grupo}', ${jugador.id})">
                                 </div>
-                                <input type="text" class="input-nombre" value="${jugador.nombre}" onchange="actualizarCampo(this, '${grupo}', ${jugador.id}, 'nombre')">
+                                <div class="wrapper-nombre-estrellas">
+                                    <input type="text" class="input-nombre" value="${jugador.nombre}" onchange="actualizarCampo(this, '${grupo}', ${jugador.id}, 'nombre')">
+                                    <span id="estrellas-j-${jugador.id}">${estrellas}</span>
+                                </div>
                             </div>
                         </td>
                         <td><input type="number" class="input-stat" value="${jugador.pj}" onchange="actualizarCampo(this, '${grupo}', ${jugador.id}, 'pj')"></td>
@@ -1033,6 +1259,9 @@
             
             if (campo === 'nombre') {
                 actualizarEtiquetasCalendario();
+                // Actualiza dinámicamente las estrellas por si se cambia el nombre por uno campeón
+                const wrapperEstrellas = document.getElementById(`estrellas-j-${id}`);
+                if(wrapperEstrellas) wrapperEstrellas.innerHTML = obtenerEstrellasJugador(valor);
             }
             persistirEnLocalStorage();
         }
@@ -1299,9 +1528,111 @@
             return null;
         }
 
+        /* --- FUNCIONES DINÁMICAS: GESTIÓN DE HISTORIAL DE CAMPEONES --- */
+        function renderizarHistorialCampeones() {
+            const contenedor = document.getElementById('history-grid-container');
+            contenedor.innerHTML = "";
+
+            if(listaHistorialCampeones.length === 0) {
+                contenedor.innerHTML = `<p class="placeholder-text" style="grid-column: 1/-1; text-align: center; padding: 40px 0;">No hay campeones registrados en el historial todavía.</p>`;
+                return;
+            }
+
+            // Ordena el historial de más reciente a más antiguo
+            listaHistorialCampeones.sort((a,b) => parseInt(b.year) - parseInt(a.year));
+
+            listaHistorialCampeones.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'history-card';
+                card.innerHTML = `
+                    <div class="history-card-top">
+                        <input type="text" class="input-historial-year" value="${item.year}" onchange="actualizarDatoHistorial(${item.id}, 'year', this.value)">
+                        <button class="btn-delete-card" onclick="eliminarCampeonHistorial(${item.id})"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                    <div class="history-main-info">
+                        <div class="history-badge-container">
+                            ${item.escudo ? `<img src="${item.escudo}">` : `<i class="fa-solid fa-shield-halved"></i>`}
+                            <input type="file" onchange="cargarEscudoHistorial(this, ${item.id})">
+                        </div>
+                        <div class="history-details-inputs">
+                            <input type="text" class="input-historial-text h-player" value="${item.jugador}" placeholder="Nombre Manager" onchange="actualizarDatoHistorial(${item.id}, 'jugador', this.value)">
+                            <input type="text" class="input-historial-text" value="${item.equipo}" placeholder="Equipo / Club" onchange="actualizarDatoHistorial(${item.id}, 'equipo', this.value)">
+                        </div>
+                    </div>
+                    <div class="history-footer-stats">
+                        <div class="h-stat-field">
+                            <span>Subcampeón</span>
+                            <input type="text" class="input-historial-stat" value="${item.subcampeon}" placeholder="Rival subcampeón" onchange="actualizarDatoHistorial(${item.id}, 'subcampeon', this.value)">
+                        </div>
+                        <div class="h-stat-field" style="text-align: right;">
+                            <span>Resultado</span>
+                            <input type="text" class="input-historial-stat" style="text-align: right;" value="${item.resultado}" placeholder="Ej: 3 - 2" onchange="actualizarDatoHistorial(${item.id}, 'resultado', this.value)">
+                        </div>
+                    </div>
+                `;
+                contenedor.appendChild(card);
+            });
+        }
+
+        function agregarNuevoCampeonHistorial() {
+            const nuevoCampeon = {
+                id: Date.now(),
+                year: "2025",
+                jugador: "Nuevo Campeón",
+                equipo: "Nombre de Equipo",
+                escudo: "",
+                subcampeon: "-",
+                resultado: "-"
+            };
+            listaHistorialCampeones.push(nuevoCampeon);
+            persistirEnLocalStorage();
+            renderizarHistorialCampeones();
+            renderizarTablas(); // Actualiza estrellas
+        }
+
+        function eliminarCampeonHistorial(id) {
+            if(confirm("¿Eliminar este registro del historial?")) {
+                listaHistorialCampeones = listaHistorialCampeones.filter(h => h.id !== id);
+                persistirEnLocalStorage();
+                renderizarHistorialCampeones();
+                renderizarTablas(); // Actualiza estrellas
+            }
+        }
+
+        function actualizarDatoHistorial(id, campo, valor) {
+            let item = listaHistorialCampeones.find(h => h.id === id);
+            if(item) {
+                item[campo] = valor;
+                persistirEnLocalStorage();
+                if(campo === 'jugador') {
+                    renderizarTablas(); // Actualiza estrellas de inmediato si cambia el mánager
+                }
+            }
+        }
+
+        function cargarEscudoHistorial(input, id) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    let item = listaHistorialCampeones.find(h => h.id === id);
+                    if(item) {
+                        item.escudo = e.target.result;
+                        persistirEnLocalStorage();
+                        renderizarHistorialCampeones();
+                    }
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
         function reiniciarTorneo() {
-            if(confirm("¿Estás completamente seguro de que quieres borrar todos los datos del torneo? Esto no se puede deshacer.")) {
-                localStorage.clear();
+            if(confirm("¿Estás completamente seguro de que quieres borrar todos los datos del torneo? Esto no afectará al Historial de Campeones.")) {
+                // Borrar solo claves del torneo actual para proteger el historial
+                Object.keys(localStorage).forEach(key => {
+                    if (key !== 'superligaa_historialCampeones') {
+                        localStorage.removeItem(key);
+                    }
+                });
                 datosTorneo = JSON.parse(JSON.stringify(estructuraLimpia));
                 imagenesBrackets = {
                     "c1-t1": "", "c1-t2": "", "c2-t1": "", "c2-t2": "",
@@ -1313,7 +1644,7 @@
                 generarCalendariosHTML();
                 recuperarInputsYLabelsBrackets();
                 calcularBrackets();
-                alert("Torneo reiniciado correctamente.");
+                alert("Torneo actual reiniciado correctamente. El Historial se ha mantenido intacto.");
             }
         }
 
@@ -1324,15 +1655,23 @@
 
             document.getElementById('view-' + viewId).classList.add('active-view');
             
-            if(viewId === 'grupos') {
-                document.getElementById('nav-grupos').classList.add('active');
-                document.getElementById('tab-grupos-btn').classList.add('active-tab');
-            } else if(viewId === 'jornadas') {
-                document.getElementById('nav-jornadas').classList.add('active');
-                document.getElementById('tab-jornadas-btn').classList.add('active-tab');
-            } else if(viewId === 'eliminatorio') {
-                document.getElementById('nav-eliminatorio').classList.add('active');
-                document.getElementById('tab-eliminatorio-btn').classList.add('active-tab');
+            // Ocultar pestañas superiores si se entra a historial para limpiar interfaz, o marcar la correcta
+            if(viewId === 'historial') {
+                document.getElementById('nav-historial').classList.add('active');
+                document.getElementById('tab-historial-btn').classList.add('active-tab');
+                document.getElementById('main-view-title').innerText = "Historial Histórico";
+            } else {
+                document.getElementById('main-view-title').innerText = "Mundialito 2000";
+                if(viewId === 'grupos') {
+                    document.getElementById('nav-grupos').classList.add('active');
+                    document.getElementById('tab-grupos-btn').classList.add('active-tab');
+                } else if(viewId === 'jornadas') {
+                    document.getElementById('nav-jornadas').classList.add('active');
+                    document.getElementById('tab-jornadas-btn').classList.add('active-tab');
+                } else if(viewId === 'eliminatorio') {
+                    document.getElementById('nav-eliminatorio').classList.add('active');
+                    document.getElementById('tab-eliminatorio-btn').classList.add('active-tab');
+                }
             }
 
             const sidebar = document.getElementById('sidebar');
@@ -1342,7 +1681,9 @@
         window.onload = function() {
             let memoriaDatos = localStorage.getItem('superligaa_datosTorneo');
             let memoriaImagenes = localStorage.getItem('superligaa_imagenesBrackets');
+            let memoriaHistorial = localStorage.getItem('superligaa_historialCampeones');
 
+            if(memoriaHistorial) listaHistorialCampeones = JSON.parse(memoriaHistorial);
             if(memoriaDatos) datosTorneo = JSON.parse(memoriaDatos);
             if(memoriaImagenes) imagenesBrackets = JSON.parse(memoriaImagenes);
 
@@ -1350,6 +1691,7 @@
             generarCalendariosHTML();
             recuperarInputsYLabelsBrackets();
             calcularBrackets();
+            renderizarHistorialCampeones();
         };
     </script>
 </body>
