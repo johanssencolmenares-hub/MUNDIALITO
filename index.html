@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mundialito 2000 - SUPERLIGAA</title>
+    <title>Mundialito2026-BronxScore</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -33,6 +33,24 @@
             display: flex;
             height: 100vh;
             overflow: hidden;
+            position: relative;
+        }
+
+        /* BOTÓN FLOTANTE PARA MENÚ (MÓVIL) */
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            background-color: var(--score7-green);
+            color: #0b0d10;
+            border: none;
+            padding: 10px 14px;
+            font-size: 18px;
+            border-radius: 6px;
+            cursor: pointer;
+            z-index: 1100;
+            box-shadow: 0 4px 10px rgba(0, 204, 102, 0.3);
         }
 
         /* SIDEBAR ESTILO SCORE7 */
@@ -43,6 +61,8 @@
             flex-direction: column;
             border-right: 1px solid var(--border-color);
             flex-shrink: 0;
+            transition: transform 0.3s ease;
+            z-index: 1000;
         }
 
         .brand {
@@ -95,12 +115,25 @@
             padding-left: 20px;
         }
 
+        /* CAPA OSCURA PARA EL MÓVIL AL ABRIR EL MENÚ */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 999;
+        }
+
         /* CONTENIDO PRINCIPAL */
         .main-content {
             flex-grow: 1;
             display: flex;
             flex-direction: column;
             overflow-y: auto;
+            width: 100%;
         }
 
         .top-header {
@@ -145,7 +178,7 @@
             border-bottom-color: var(--score7-green);
         }
 
-        /* MODELO DE TABLAS EN PARALELO */
+        /* MODELO DE TABLAS */
         .groups-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -169,9 +202,17 @@
             letter-spacing: 0.5px;
         }
 
+        /* CONTENEDOR PARA HACER LA TABLA SCROLLABLE EN CELULARES */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
         .tabla-grupos {
             width: 100%;
             border-collapse: collapse;
+            min-width: 500px; /* Evita que las columnas colapsen en pantallas chicas */
         }
 
         .tabla-grupos th {
@@ -199,7 +240,6 @@
             border-bottom: none;
         }
 
-        /* Resaltar zona de clasificación (Top 4) */
         .row-top-4 {
             background-color: rgba(0, 204, 102, 0.02);
         }
@@ -208,7 +248,6 @@
             font-weight: 700;
         }
 
-        /* Contenedor bandera circular */
         .img-circle-selector {
             width: 28px;
             height: 28px;
@@ -251,14 +290,13 @@
             text-align: left;
         }
 
-        /* Inputs dinámicos */
         .input-nombre {
             background: transparent;
             border: 1px solid transparent;
             color: var(--text-main);
             font-size: 14px;
             font-weight: 600;
-            width: 150px;
+            width: 120px;
             padding: 4px 6px;
             border-radius: 4px;
         }
@@ -308,13 +346,14 @@
             cursor: pointer;
             box-shadow: 0 4px 12px rgba(0, 204, 102, 0.2);
             transition: all 0.2s;
+            width: auto;
         }
 
         .btn-guardar:hover {
             background-color: var(--score7-green-hover);
         }
 
-        /* INTERFAZ ELIMINATORIA (BRACKETS MECHANISM) */
+        /* INTERFAZ ELIMINATORIA (BRACKETS) */
         .bracket-wrapper {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -386,14 +425,65 @@
             color: var(--text-muted);
             font-style: italic;
         }
+
+        /* 📱 RESPONSIVE DESIGN (REGLAS PARA CELULARES) */
+        @media (max-width: 900px) {
+            .menu-toggle {
+                display: block; /* Muestra el botón de menú */
+            }
+
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                height: 100vh;
+                transform: translateX(-100%); /* Esconde la barra a la izquierda */
+                box-shadow: 5px 0 15px rgba(0,0,0,0.5);
+            }
+
+            .sidebar.open {
+                transform: translateX(0); /* Despliega la barra cuando se abre */
+            }
+
+            .top-header {
+                padding: 20px 20px 20px 70px; /* Deja espacio para el botón flotante */
+            }
+
+            .content-body {
+                padding: 20px;
+            }
+
+            .groups-grid {
+                grid-template-columns: 1fr; /* Pone las tablas una debajo de la otra */
+                gap: 20px;
+            }
+
+            .btn-guardar-container {
+                grid-column: span 1;
+                text-align: center;
+            }
+
+            .btn-guardar {
+                width: 100%; /* Botón de guardar a pantalla completa en móvil */
+            }
+
+            .bracket-wrapper {
+                grid-template-columns: 1fr; /* El cuadro eliminatorio fluye hacia abajo */
+                gap: 30px;
+            }
+        }
     </style>
 </head>
 <body>
 
+    <!-- BOTÓN GENTIL PARA DESPLEGAR MENÚ EN MOVIL -->
+    <button class="menu-toggle" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+    <div class="sidebar-overlay" id="overlay" onclick="toggleSidebar()"></div>
+
     <!-- BARRA LATERAL -->
-    <div class="sidebar">
+    <div class="sidebar" id="sidebar">
         <div class="brand">
-            <i class="fa-solid fa-trophy"></i> Score7 Replica
+            <i class="fa-solid fa-trophy"></i> SUPERLIGAA
         </div>
         <div class="nav-container">
             <div class="nav-section-title">Fase de Grupos</div>
@@ -418,7 +508,7 @@
             
             <!-- PESTAÑAS -->
             <div class="tabs-header">
-                <div class="tab-btn active-tab" id="tab-grupos-btn" onclick="switchMainView('grupos')">Fase de Grupos (2 de 7)</div>
+                <div class="tab-btn active-tab" id="tab-grupos-btn" onclick="switchMainView('grupos')">Fase de Grupos</div>
                 <div class="tab-btn" id="tab-eliminatorio-btn" onclick="switchMainView('eliminatorio')">Cuadro Eliminatorio</div>
             </div>
 
@@ -429,49 +519,49 @@
                     <!-- GRUPO A -->
                     <div class="group-card">
                         <div class="group-card-title">Grupo A</div>
-                        <table class="tabla-grupos">
-                            <thead>
-                                <tr>
-                                    <th style="width: 30px;">#</th>
-                                    <th class="th-jugador">Jugador</th>
-                                    <th style="width: 35px;">PJ</th>
-                                    <th style="width: 35px;">G</th>
-                                    <th style="width: 35px;">E</th>
-                                    <th style="width: 35px;">P</th>
-                                    <th style="width: 35px;">GF</th>
-                                    <th style="width: 35px;">GC</th>
-                                    <th style="width: 40px;">GD</th>
-                                    <th style="width: 45px;">PTS</th>
-                                </tr>
-                            </thead>
-                            <tbody id="body-grupo-a">
-                                <!-- Generación por script -->
-                            </tbody>
-                        </table>
+                        <div class="table-responsive">
+                            <table class="tabla-grupos">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 30px;">#</th>
+                                        <th class="th-jugador">Jugador</th>
+                                        <th style="width: 35px;">PJ</th>
+                                        <th style="width: 35px;">G</th>
+                                        <th style="width: 35px;">E</th>
+                                        <th style="width: 35px;">P</th>
+                                        <th style="width: 35px;">GF</th>
+                                        <th style="width: 35px;">GC</th>
+                                        <th style="width: 40px;">GD</th>
+                                        <th style="width: 45px;">PTS</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="body-grupo-a"></tbody>
+                            </table>
+                        </div>
                     </div>
 
                     <!-- GRUPO B -->
                     <div class="group-card">
                         <div class="group-card-title">Grupo B</div>
-                        <table class="tabla-grupos">
-                            <thead>
-                                <tr>
-                                    <th style="width: 30px;">#</th>
-                                    <th class="th-jugador">Jugador</th>
-                                    <th style="width: 35px;">PJ</th>
-                                    <th style="width: 35px;">G</th>
-                                    <th style="width: 35px;">E</th>
-                                    <th style="width: 35px;">P</th>
-                                    <th style="width: 35px;">GF</th>
-                                    <th style="width: 35px;">GC</th>
-                                    <th style="width: 40px;">GD</th>
-                                    <th style="width: 45px;">PTS</th>
-                                </tr>
-                            </thead>
-                            <tbody id="body-grupo-b">
-                                <!-- Generación por script -->
-                            </tbody>
-                        </table>
+                        <div class="table-responsive">
+                            <table class="tabla-grupos">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 30px;">#</th>
+                                        <th class="th-jugador">Jugador</th>
+                                        <th style="width: 35px;">PJ</th>
+                                        <th style="width: 35px;">G</th>
+                                        <th style="width: 35px;">E</th>
+                                        <th style="width: 35px;">P</th>
+                                        <th style="width: 35px;">GF</th>
+                                        <th style="width: 35px;">GC</th>
+                                        <th style="width: 40px;">GD</th>
+                                        <th style="width: 45px;">PTS</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="body-grupo-b"></tbody>
+                            </table>
+                        </div>
                     </div>
 
                     <div class="btn-guardar-container">
@@ -538,7 +628,7 @@
                     </div>
 
                     <!-- SEMIFINALES -->
-                    <div class="bracket-column" style="justify-content: center; gap: 80px;">
+                    <div class="bracket-column">
                         <div class="bracket-column-title">Semifinales</div>
                         
                         <div class="match-card">
@@ -567,7 +657,7 @@
                     </div>
 
                     <!-- FINAL -->
-                    <div class="bracket-column" style="justify-content: center;">
+                    <div class="bracket-column">
                         <div class="bracket-column-title">Final</div>
                         
                         <div class="match-card">
@@ -582,7 +672,7 @@
                             </div>
                         </div>
 
-                        <div id="text-campeon" style="margin-top: 30px; text-align: center; color: var(--score7-green); font-weight: 700; font-size: 18px; text-transform: uppercase;"></div>
+                        <div id="text-campeon" style="margin-top: 20px; text-align: center; color: var(--score7-green); font-weight: 700; font-size: 18px; text-transform: uppercase;"></div>
                     </div>
 
                 </div>
@@ -592,7 +682,6 @@
     </div>
 
     <script>
-        // Estructura interna inicial de los datos (14 Jugadores repartidos de forma fija)
         let datosTorneo = {
             A: [
                 {id: 1, nombre: "Jugador 1", pj:0, g:0, e:0, p:0, gf:0, gc:0, gd:0, pts:0, img:""},
@@ -613,6 +702,14 @@
                 {id: 14, nombre: "Jugador 14", pj:0, g:0, e:0, p:0, gf:0, gc:0, gd:0, pts:0, img:""}
             ]
         };
+
+        // MECANISMO RESPONSIVO SCRIPT
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            sidebar.classList.toggle('open');
+            overlay.style.display = sidebar.classList.contains('open') ? 'block' : 'none';
+        }
 
         function renderizarTablas() {
             ['A', 'B'].forEach(grupo => {
@@ -658,7 +755,6 @@
             }
             jugador[campo] = valor;
 
-            // Auto-calcular Diferencia de Goles de forma reactiva
             if (campo === 'gf' || campo === 'gc') {
                 jugador.gd = jugador.gf - jugador.gc;
             }
@@ -676,7 +772,6 @@
             }
         }
 
-        // Mapeo automático de posiciones de Score7 basado en Puntos -> Gol Diferencia -> Goles a favor
         function procesarTablasYCruces() {
             ['A', 'B'].forEach(grupo => {
                 datosTorneo[grupo].sort((a, b) => {
@@ -688,7 +783,6 @@
 
             renderizarTablas();
 
-            // Cruces automáticos según Score7 (1ºA vs 4ºB, 2ºB vs 3ºA, etc.)
             document.getElementById('c1-t1').innerText = "1º " + datosTorneo['A'][0].nombre;
             document.getElementById('c1-t2').innerText = "4º " + datosTorneo['B'][3].nombre;
 
@@ -706,7 +800,6 @@
         }
 
         function calcularBrackets() {
-            // Cuartos a Semis
             let p1 = obtenerGanadorLlave('c1-t1', 'c1-t2', 'sc-c1-t1', 'sc-c1-t2', 'Ganador Partido 1');
             document.getElementById('s1-t1').innerText = p1;
 
@@ -719,14 +812,12 @@
             let p4 = obtenerGanadorLlave('c4-t1', 'c4-t2', 'sc-c4-t1', 'sc-c4-t2', 'Ganador Partido 4');
             document.getElementById('s2-t2').innerText = p4;
 
-            // Semis a Final
             let s1 = obtenerGanadorLlave('s1-t1', 's1-t2', 'sc-s1-t1', 'sc-s1-t2', 'Ganador S1');
             document.getElementById('f-t1').innerText = s1;
 
             let s2 = obtenerGanadorLlave('s2-t1', 's2-t2', 'sc-s2-t1', 'sc-s2-t2', 'Ganador S2');
             document.getElementById('f-t2').innerText = s2;
 
-            // Ganador Final
             let campeon = obtenerGanadorLlave('f-t1', 'f-t2', 'sc-f-t1', 'sc-f-t2', '');
             const txtCamp = document.getElementById('text-campeon');
             if(campeon && campeon !== 'Ganador S1' && campeon !== 'Ganador S2') {
@@ -762,6 +853,12 @@
             } else if(viewId === 'eliminatorio') {
                 document.getElementById('nav-eliminatorio').classList.add('active');
                 document.getElementById('tab-eliminatorio-btn').classList.add('active-tab');
+            }
+
+            // Cerrar menú automáticamente tras elegir sección en celular
+            const sidebar = document.getElementById('sidebar');
+            if(sidebar.classList.contains('open')) {
+                toggleSidebar();
             }
         }
 
