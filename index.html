@@ -1318,52 +1318,51 @@
 
         function actualizarEtiquetasCalendario() {
             ['A', 'B'].forEach(grupo => {
-                // Generamos un mapeo de ID a jugador para encontrarlo sin importar cómo esté ordenada la tabla de posiciones en datosTorneo
-                const mapaJugadores = {};
                 const idBase = grupo === 'A' ? 1 : 8;
+                const jugadores = [];
+                
+                // Mapeamos los 7 jugadores en un array ordenado (0 al 6) basado en su ID original
                 for (let i = 0; i < 7; i++) {
                     const idBuscado = idBase + i;
-                    mapaJugadores[i] = datosTorneo[grupo].find(j => j.id === idBuscado);
+                    jugadores.push(datosTorneo[grupo].find(j => j.id === idBuscado));
                 }
-                
-                const cruces = {
-                    1: [[0,1], [2,3], [4,5]], 
-                    2: [[0,2], [1,4], [3,6]], 
-                    3: [[0,3], [1,5], [2,6]], 
-                    4: [[0,4], [2,5], [1,6]], 
-                    5: [[0,5], [3,4], [1,2]], // Ajustado para evitar duplicar el índice 5 en J5
-                    6: [[1,6], [2,5], [3,4]], // Arreglado matemáticamente el cruce de la jornada 6 (Dani descansa índice 0)
-                    7: [[1,3], [2,4], [0,5]] 
-                };
 
-                for(let j = 1; j <= 7; j++) {
-                    let indicesJugando = [];
-                    cruces[j].forEach(par => {
-                        indicesJugando.push(par[0], par[1]);
-                    });
-                    let idxLibre = [0,1,2,3,4,5,6].find(idx => !indicesJugando.includes(idx));
-                    let jugadorLibre = mapaJugadores[idxLibre];
+                // ALGORITMO ROUND ROBIN DINÁMICO PERFECTO PARA 7 JUGADORES
+                for (let j = 1; j <= 7; j++) {
+                    let partidosJornada = [];
+                    let idxDescanso = (j - 1) % 7; 
+                    let jugadorLibre = jugadores[idxDescanso];
+
+                    let activos = [];
+                    for (let k = 0; k < 7; k++) {
+                        if (k !== idxDescanso) activos.push(k);
+                    }
+
+                    // Emparejamiento perfecto balanceado
+                    partidosJornada.push([activos[0], activos[5]]);
+                    partidosJornada.push([activos[1], activos[4]]);
+                    partidosJornada.push([activos[2], activos[3]]);
 
                     let descansoEl = document.getElementById(`descanso-${grupo}-j${j}`);
-                    if(descansoEl) {
+                    if (descansoEl) {
                         descansoEl.innerHTML = jugadorLibre ? `<i class="fa-solid fa-bed"></i> Descansa: ${jugadorLibre.nombre}` : "";
                     }
 
-                    for(let m = 1; m <= 3; m++) {
-                        let idxL = cruces[j][m-1][0];
-                        let idxV = cruces[j][m-1][1];
+                    for (let m = 1; m <= 3; m++) {
+                        let idxL = partidosJornada[m - 1][0];
+                        let idxV = partidosJornada[m - 1][1];
                         
-                        let jugadorL = mapaJugadores[idxL];
-                        let jugadorV = mapaJugadores[idxV];
+                        let jugadorL = jugadores[idxL];
+                        let jugadorV = jugadores[idxV];
 
                         let localNameEl = document.getElementById(`text-${grupo}-jj${j}-m${m}-l-name`);
                         let visitNameEl = document.getElementById(`text-${grupo}-jj${j}-m${m}-v-name`);
                         
-                        if(localNameEl) localNameEl.innerText = jugadorL ? jugadorL.nombre : "Jugador";
-                        if(visitNameEl) visitNameEl.innerText = jugadorV ? jugadorV.nombre : "Jugador";
+                        if (localNameEl) localNameEl.innerText = jugadorL ? jugadorL.nombre : "Jugador";
+                        if (visitNameEl) visitNameEl.innerText = jugadorV ? jugadorV.nombre : "Jugador";
 
                         let localImgContainer = document.getElementById(`img-${grupo}-j${j}-m${m}-l`);
-                        if(localImgContainer) {
+                        if (localImgContainer) {
                             localImgContainer.innerHTML = (jugadorL && jugadorL.img) ? `<img src="${jugadorL.img}">` : `<i class="fa-solid fa-flag"></i>`;
                         }
 
@@ -1419,30 +1418,33 @@
         }
 
         function procesarTablasYCruces() {
-            const cruces = {
-                1: [[0,1], [2,3], [4,5]], 
-                2: [[0,2], [1,4], [3,6]], 
-                3: [[0,3], [1,5], [2,6]], 
-                4: [[0,4], [2,5], [1,6]], 
-                5: [[0,5], [3,4], [1,2]], 
-                6: [[1,6], [2,5], [3,4]], // Sincronizado correctamente el cálculo de la J6 con las etiquetas visuales
-                7: [[1,3], [2,4], [0,5]]
-            };
-
             ['A', 'B'].forEach(grupo => {
+                // Reiniciamos estadísticas básicas
                 datosTorneo[grupo].forEach(j => {
                     j.pj = 0; j.g = 0; j.e = 0; j.p = 0; j.gf = 0; j.gc = 0; j.gd = 0; j.pts = 0;
                 });
 
-                // Para calcular los puntos de forma fija creamos el mapa basado en el ID original
-                const mapaJugadores = {};
                 const idBase = grupo === 'A' ? 1 : 8;
+                const jugadores = [];
                 for (let i = 0; i < 7; i++) {
                     const idBuscado = idBase + i;
-                    mapaJugadores[i] = datosTorneo[grupo].find(j => j.id === idBuscado);
+                    jugadores.push(datosTorneo[grupo].find(j => j.id === idBuscado));
                 }
 
+                // Cálculo exacto usando el mismo algoritmo dinámico Round Robin
                 for (let j = 1; j <= 7; j++) {
+                    let idxDescanso = (j - 1) % 7;
+                    let activos = [];
+                    for (let k = 0; k < 7; k++) {
+                        if (k !== idxDescanso) activos.push(k);
+                    }
+
+                    let partidosJornada = [
+                        [activos[0], activos[5]],
+                        [activos[1], activos[4]],
+                        [activos[2], activos[3]]
+                    ];
+
                     for (let m = 1; m <= 3; m++) {
                         let idL = `input-${grupo}-j${j}-m${m}-l`;
                         let idV = `input-${grupo}-j${j}-m${m}-v`;
@@ -1454,11 +1456,11 @@
                             let golesL = parseInt(valL);
                             let golesV = parseInt(valV);
 
-                            let idxL = cruces[j][m-1][0];
-                            let idxV = cruces[j][m-1][1];
+                            let idxL = partidosJornada[m - 1][0];
+                            let idxV = partidosJornada[m - 1][1];
 
-                            let jugadorL = mapaJugadores[idxL];
-                            let jugadorV = mapaJugadores[idxV];
+                            let jugadorL = jugadores[idxL];
+                            let jugadorV = jugadores[idxV];
 
                             if (jugadorL && jugadorV) {
                                 jugadorL.pj++;
@@ -1489,12 +1491,12 @@
                     }
                 }
 
-                // Ordenación de la tabla de posiciones 100% determinista sin usar Math.random()
+                // Ordenación justa y fija
                 datosTorneo[grupo].sort((a, b) => {
-                    if (b.pts !== a.pts) return b.pts - a.pts; // 1º Criterio: Puntos
-                    if (b.gd !== a.gd) return b.gd - a.gd;     // 2º Criterio: Diferencia de Goles
-                    if (b.gf !== a.gf) return b.gf - a.gf;     // 3º Criterio: Goles a Favor
-                    return a.id - b.id;                        // 4º Criterio: ID estático (Congela el orden original si todo es idéntico)
+                    if (b.pts !== a.pts) return b.pts - a.pts;
+                    if (b.gd !== a.gd) return b.gd - a.gd;
+                    if (b.gf !== a.gf) return b.gf - a.gf;
+                    return a.id - b.id;
                 });
             });
 
@@ -1770,7 +1772,7 @@
                 if(tHist) tHist.classList.add('active-tab');
                 if(titleEl) titleEl.innerText = "Historial Histórico";
             } else {
-                if(titleEl) titleEl.innerText = "Mundialito 2000";
+                if(titleEl) titleEl.innerText = "Mundialito 2026";
                 if(viewId === 'grupos') {
                     const nG = document.getElementById('nav-grupos');
                     const tG = document.getElementById('tab-grupos-btn');
