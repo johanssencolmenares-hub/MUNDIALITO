@@ -1250,7 +1250,7 @@
             });
         }
 
-function actualizarCampo(input, grupo, id, campo) {
+        function actualizarCampo(input, grupo, id, campo) {
             let valor = input.value;
             let jugador = datosTorneo[grupo].find(j => j.id === id);
             if(!jugador) return;
@@ -1258,53 +1258,6 @@ function actualizarCampo(input, grupo, id, campo) {
             if (campo === 'nombre') {
                 jugador.nombre = valor;
                 actualizarEtiquetasCalendario();
-                const wrapperEstrellas = document.getElementById(`estrellas-j-${id}`);
-                if(wrapperEstrellas) wrapperEstrellas.innerHTML = obtenerEstrellasJugador(valor);
-            }
-            persistirEnLocalStorage();
-        }
-
-        function actualizarEtiquetasCalendario() {
-            ['A', 'B'].forEach(grupo => {
-                const lista = datosTorneo[grupo];
-                
-                const cruces = {
-                    1: [[0,1], [2,3], [4,5]], 
-                    2: [[0,2], [1,4], [3,6]], 
-                    3: [[0,3], [1,5], [2,6]], 
-                    4: [[0,4], [2,5], [1,6]], 
-                    5: [[0,5], [3,4], [1,2]], 
-                    6: [[1,2], [3,5], [0,6]], 
-                    7: [[1,3], [2,4], [0,5]] 
-                };
-
-                for(let j = 1; j <= 7; j++) {
-                    for(let m = 1; m <= 3; m++) {
-                        let idxL = cruces[j][m-1][0];
-                        let idxV = cruces[j][m-1][1];
-                        
-                        let jugadorL = lista[idxL];
-                        let jugadorV = lista[idxV];
-
-                        let localNameEl = document.getElementById(`text-${grupo}-jj${j}-m${m}-l-name`);
-                        let visitNameEl = document.getElementById(`text-${grupo}-jj${j}-m${m}-v-name`);
-                        
-                        if(localNameEl) localNameEl.innerText = jugadorL ? jugadorL.nombre : "DESCANSA";
-                        if(visitNameEl) visitNameEl.innerText = jugadorV ? jugadorV.nombre : "DESCANSA";
-
-                        let localImgContainer = document.getElementById(`img-${grupo}-j${j}-m${m}-l`);
-                        if(localImgContainer) {
-                            localImgContainer.innerHTML = (jugadorL && jugadorL.img) ? `<img src="${jugadorL.img}">` : `<i class="fa-solid fa-flag"></i>`;
-                        }
-
-                        let visitImgContainer = document.getElementById(`img-${grupo}-j${j}-m${m}-v`);
-                        if(visitImgContainer) {
-                            visitImgContainer.innerHTML = (jugadorV && jugadorV.img) ? `<img src="${jugadorV.img}">` : `<i class="fa-solid fa-flag"></i>`;
-                        }
-                    }
-                }
-            });
-        }
                 const wrapperEstrellas = document.getElementById(`estrellas-j-${id}`);
                 if(wrapperEstrellas) wrapperEstrellas.innerHTML = obtenerEstrellasJugador(valor);
             }
@@ -1349,7 +1302,6 @@ function actualizarCampo(input, grupo, id, campo) {
                         `;
                     }
 
-                    // CONTENEDOR PARA MOSTRAR QUIÉN DESCANSA ABAJO DE LOS PARTIDOS
                     bloqueJornada.innerHTML = `
                         <div class="jornada-header">Jornada ${j}</div>
                         <div class="matches-list">
@@ -1373,13 +1325,12 @@ function actualizarCampo(input, grupo, id, campo) {
                     2: [[0,2], [1,4], [3,6]], 
                     3: [[0,3], [1,5], [2,6]], 
                     4: [[0,4], [2,5], [1,6]], 
-                    5: [[0,5], [3,4], [1,2]], 
+                    5: [[0,5], [3,4], [5,6]], 
                     6: [[1,2], [3,5], [0,6]], 
                     7: [[1,3], [2,4], [0,5]] 
                 };
 
                 for(let j = 1; j <= 7; j++) {
-                    // Detectar matemáticamente quién no juega en esta jornada
                     let indicesJugando = [];
                     cruces[j].forEach(par => {
                         indicesJugando.push(par[0], par[1]);
@@ -1387,7 +1338,6 @@ function actualizarCampo(input, grupo, id, campo) {
                     let idxLibre = [0,1,2,3,4,5,6].find(idx => !indicesJugando.includes(idx));
                     let jugadorLibre = lista[idxLibre];
 
-                    // Colocar el nombre de quien descansa en la etiqueta correspondiente
                     let descansoEl = document.getElementById(`descanso-${grupo}-j${j}`);
                     if(descansoEl) {
                         descansoEl.innerHTML = jugadorLibre ? `<i class="fa-solid fa-bed"></i> Descansa: ${jugadorLibre.nombre}` : "";
@@ -1418,7 +1368,7 @@ function actualizarCampo(input, grupo, id, campo) {
                     }
                 }
             });
-        } // Cierre limpio de la función anterior. ¡Aquí no debe haber nada flotando!
+        }
 
         function guardarScoreCalendario(idInput) {
             let el = document.getElementById(idInput);
@@ -1447,47 +1397,6 @@ function actualizarCampo(input, grupo, id, campo) {
             });
         }
 
-        function actualizarEtiquetasCalendario() {
-            ['A', 'B'].forEach(grupo => {
-                const lista = datosTorneo[grupo];
-                const cruces = {
-                    1: [[0,1], [2,3], [4,5]], 
-                    2: [[0,2], [1,4], [3,6]], 
-                    3: [[0,3], [1,5], [2,6]], 
-                    4: [[0,4], [2,5], [1,6]], 
-                    5: [[0,5], [3,4], [5,6]], 
-                    6: [[1,2], [3,5], [0,6]], 
-                    7: [[1,3], [2,4], [0,5]]
-                };
-
-                for(let j = 1; j <= 7; j++) {
-                    for(let m = 1; m <= 3; m++) {
-                        let idxL = cruces[j][m-1][0];
-                        let idxV = cruces[j][m-1][1];
-                        
-                        let jugadorL = lista[idxL];
-                        let jugadorV = lista[idxV];
-
-                        let localNameEl = document.getElementById(`text-${grupo}-jj${j}-m${m}-l-name`);
-                        let visitNameEl = document.getElementById(`text-${grupo}-jj${j}-m${m}-v-name`);
-                        
-                        if(localNameEl) localNameEl.innerText = jugadorL ? jugadorL.nombre : "Jugador";
-                        if(visitNameEl) visitNameEl.innerText = jugadorV ? jugadorV.nombre : "Jugador";
-
-                        let localImgContainer = document.getElementById(`img-${grupo}-j${j}-m${m}-l`);
-                        if(localImgContainer) {
-                            localImgContainer.innerHTML = (jugadorL && jugadorL.img) ? `<img src="${jugadorL.img}">` : `<i class="fa-solid fa-flag"></i>`;
-                        }
-
-                        let visitImgContainer = document.getElementById(`img-${grupo}-j${j}-m${m}-v`);
-                        if(visitImgContainer) {
-                            visitImgContainer.innerHTML = (jugadorV && jugadorV.img) ? `<img src="${jugadorV.img}">` : `<i class="fa-solid fa-flag"></i>`;
-                        }
-                    }
-                }
-            });
-        }
-
         function cargarBandera(input, grupo, id) {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
@@ -1503,7 +1412,6 @@ function actualizarCampo(input, grupo, id, campo) {
             }
         }
 
-        // NUEVA FUNCIÓN MEJORADA: HACE TODO EL TRABAJO MATEMÁTICO POR TI
         function procesarTablasYCruces() {
             const cruces = {
                 1: [[0,1], [2,3], [4,5]], 
@@ -1516,12 +1424,10 @@ function actualizarCampo(input, grupo, id, campo) {
             };
 
             ['A', 'B'].forEach(grupo => {
-                // 1. Resetear estadísticas para calcular desde cero limpiamente
                 datosTorneo[grupo].forEach(j => {
                     j.pj = 0; j.g = 0; j.e = 0; j.p = 0; j.gf = 0; j.gc = 0; j.gd = 0; j.pts = 0;
                 });
 
-                // 2. Leer los goles directo de los inputs guardados en la vista Jornadas
                 for (let j = 1; j <= 7; j++) {
                     for (let m = 1; m <= 3; m++) {
                         let idL = `input-${grupo}-j${j}-m${m}-l`;
@@ -1530,7 +1436,6 @@ function actualizarCampo(input, grupo, id, campo) {
                         let valL = localStorage.getItem(`superligaa_cal_${idL}`);
                         let valV = localStorage.getItem(`superligaa_cal_${idV}`);
 
-                        // Si ambos casilleros tienen goles válidos, procesamos el partido
                         if (valL !== null && valV !== null && valL !== "" && valV !== "") {
                             let golesL = parseInt(valL);
                             let golesV = parseInt(valV);
@@ -1549,7 +1454,6 @@ function actualizarCampo(input, grupo, id, campo) {
                                 jugadorV.gf += golesV;
                                 jugadorV.gc += golesL;
 
-                                // LÓGICA AUTOMÁTICA DE PUNTOS REQUERIDA (3, 1, 0)
                                 if (golesL > golesV) {
                                     jugadorL.g++;
                                     jugadorL.pts += 3;
@@ -1571,7 +1475,6 @@ function actualizarCampo(input, grupo, id, campo) {
                     }
                 }
 
-                // 3. Ordenar las posiciones según rendimiento oficial
                 datosTorneo[grupo].sort((a, b) => {
                     if (b.pts !== a.pts) return b.pts - a.pts;
                     if (b.gd !== a.gd) return b.gd - a.gd;
@@ -1583,7 +1486,6 @@ function actualizarCampo(input, grupo, id, campo) {
             renderizarTablas();
             actualizarEtiquetasCalendario();
 
-            // Configurar cruces automáticamente para eliminatorias
             configurarCeldaBracket('c1-t1', datosTorneo['A'][0]);
             configurarCeldaBracket('c1-t2', datosTorneo['B'][3]);
             configurarCeldaBracket('c2-t1', datosTorneo['B'][1]);
