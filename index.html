@@ -876,7 +876,6 @@
                 <i class="fa-solid fa-diagram-project"></i> Cuadro Eliminatorio
             </div>
 
-            <!-- NUEVA SECCIÓN DE HISTORIAL EN LA BARRA -->
             <div class="nav-section-title">Historial</div>
             <div class="nav-item" id="nav-historial" onclick="switchMainView('historial')">
                 <i class="fa-solid fa-crown"></i> Historial de Campeones
@@ -1108,7 +1107,7 @@
                 </div>
             </div>
 
-            <!-- VISTA 4: NUEVA SECCIÓN DE HISTORIAL DE CAMPEONES -->
+            <!-- VISTA 4: HISTORIAL DE CAMPEONES -->
             <div id="view-historial" class="view-section">
                 <div class="header-historial">
                     <h2>Salón de la Fama - Historial de Campeones</h2>
@@ -1116,9 +1115,7 @@
                         <i class="fa-solid fa-plus"></i> Añadir Campeón
                     </button>
                 </div>
-                <div class="history-grid" id="history-grid-container">
-                    <!-- Se rellena de manera dinámica -->
-                </div>
+                <div class="history-grid" id="history-grid-container"></div>
             </div>
 
         </div>
@@ -1128,10 +1125,11 @@
         const CLAVE_SECRETA = "admin123";
         let isAdmin = false;
 
+        // ESTRUCTURA DEFINITIVA CON NOMBRE DE JUGADORES CONFIRMADOS
         const estructuraLimpia = {
             A: [
                 {id: 1, nombre: "Dani", pj:0, g:0, e:0, p:0, gf:0, gc:0, gd:0, pts:0, img:""},
-                {id: 2, nombre: "Adrián", pj:0, g:0, e:0, p:0, gf:0, gc:0, gd:0, pts:0, img:""},
+                {id: 2, nombre: "Adrian", pj:0, g:0, e:0, p:0, gf:0, gc:0, gd:0, pts:0, img:""},
                 {id: 3, nombre: "Maxi", pj:0, g:0, e:0, p:0, gf:0, gc:0, gd:0, pts:0, img:""},
                 {id: 4, nombre: "Fran", pj:0, g:0, e:0, p:0, gf:0, gc:0, gd:0, pts:0, img:""},
                 {id: 5, nombre: "Bronx", pj:0, g:0, e:0, p:0, gf:0, gc:0, gd:0, pts:0, img:""},
@@ -1158,7 +1156,6 @@
             "f-t1": "", "f-t2": ""
         };
 
-        // ARRAY PARA COMPONENTES DEL HISTORIAL DE LOS CAMPEONES
         let listaHistorialCampeones = [
             {
                 id: 1,
@@ -1203,7 +1200,6 @@
             localStorage.setItem('superligaa_historialCampeones', JSON.stringify(listaHistorialCampeones));
         }
 
-        // FUNCIÓN AUXILIAR: Cuenta cuántas estrellas doradas tiene un mánager según el historial
         function obtenerEstrellasJugador(nombreJugador) {
             if (!nombreJugador) return "";
             const totalTitulos = listaHistorialCampeones.filter(h => h.jugador.trim().toLowerCase() === nombreJugador.trim().toLowerCase()).length;
@@ -1269,7 +1265,6 @@
             
             if (campo === 'nombre') {
                 actualizarEtiquetasCalendario();
-                // Actualiza dinámicamente las estrellas por si se cambia el nombre por uno campeón
                 const wrapperEstrellas = document.getElementById(`estrellas-j-${id}`);
                 if(wrapperEstrellas) wrapperEstrellas.innerHTML = obtenerEstrellasJugador(valor);
             }
@@ -1538,7 +1533,6 @@
             return null;
         }
 
-        /* --- FUNCIONES DINÁMICAS: GESTIÓN DE HISTORIAL DE CAMPEONES --- */
         function renderizarHistorialCampeones() {
             const contenedor = document.getElementById('history-grid-container');
             contenedor.innerHTML = "";
@@ -1548,7 +1542,6 @@
                 return;
             }
 
-            // Ordena el historial de más reciente a más antiguo
             listaHistorialCampeones.sort((a,b) => parseInt(b.year) - parseInt(a.year));
 
             listaHistorialCampeones.forEach(item => {
@@ -1597,7 +1590,7 @@
             listaHistorialCampeones.push(nuevoCampeon);
             persistirEnLocalStorage();
             renderizarHistorialCampeones();
-            renderizarTablas(); // Actualiza estrellas
+            renderizarTablas();
         }
 
         function eliminarCampeonHistorial(id) {
@@ -1605,7 +1598,7 @@
                 listaHistorialCampeones = listaHistorialCampeones.filter(h => h.id !== id);
                 persistirEnLocalStorage();
                 renderizarHistorialCampeones();
-                renderizarTablas(); // Actualiza estrellas
+                renderizarTablas();
             }
         }
 
@@ -1615,7 +1608,7 @@
                 item[campo] = valor;
                 persistirEnLocalStorage();
                 if(campo === 'jugador') {
-                    renderizarTablas(); // Actualiza estrellas de inmediato si cambia el mánager
+                    renderizarTablas();
                 }
             }
         }
@@ -1637,7 +1630,6 @@
 
         function reiniciarTorneo() {
             if(confirm("¿Estás completamente seguro de que quieres borrar todos los datos del torneo? Esto no afectará al Historial de Campeones.")) {
-                // Borrar solo claves del torneo actual para proteger el historial
                 Object.keys(localStorage).forEach(key => {
                     if (key !== 'superligaa_historialCampeones') {
                         localStorage.removeItem(key);
@@ -1665,7 +1657,6 @@
 
             document.getElementById('view-' + viewId).classList.add('active-view');
             
-            // Ocultar pestañas superiores si se entra a historial para limpiar interfaz, o marcar la correcta
             if(viewId === 'historial') {
                 document.getElementById('nav-historial').classList.add('active');
                 document.getElementById('tab-historial-btn').classList.add('active-tab');
