@@ -1121,7 +1121,7 @@
         let isAdmin = false;
 
         // ==========================================
-        // CONFIGURACIÓN DE SUPABASE (REPLÁZALO CUANDO TENGAS TU CUENTA)
+        // CONFIGURACIÓN DE SUPABASE
         // ==========================================
         const SUPABASE_CONFIG = {
             url: "https://pdbdfrqifmiccbofrsck.supabase.co", 
@@ -1130,7 +1130,6 @@
         
         let supabaseClient = null;
 
-        // Inicialización segura de Supabase
         if (SUPABASE_CONFIG.url !== "TU_SUPABASE_URL_AQUI" && SUPABASE_CONFIG.anonKey !== "TU_SUPABASE_ANON_KEY_AQUI") {
             supabaseClient = supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
         }
@@ -1178,6 +1177,7 @@
         };
 
         let datosTorneo = JSON.parse(JSON.stringify(estructuraLimpia));
+        let resultadosJornadas = {}; // NUEVO: Guardará de forma global en Supabase todos los goles
         let imagenesBrackets = {
             "c1-t1": "", "c1-t2": "", "c2-t1": "", "c2-t2": "",
             "c3-t1": "", "c3-t2": "", "c4-t1": "", "c4-t2": "",
@@ -1189,27 +1189,26 @@
         ];
 
         // ==========================================
-        // FUNCIONES DE PERSISTENCIA (HÍBRIDAS: SUPABASE + LOCALSTORAGE)
+        // FUNCIONES DE PERSISTENCIA (SINCRO TOTAL DE NUBE)
         // ==========================================
         async function persistirDatos() {
-            // Guardado tradicional de contingencia en LocalStorage
             localStorage.setItem('superligaa_datosTorneo', JSON.stringify(datosTorneo));
             localStorage.setItem('superligaa_imagenesBrackets', JSON.stringify(imagenesBrackets));
             localStorage.setItem('superligaa_historialCampeones', JSON.stringify(listaHistorialCampeones));
+            localStorage.setItem('superligaa_resultadosJornadas', JSON.stringify(resultadosJornadas));
 
-            // Guardado en la Nube con Supabase si está activo
             if (supabaseClient) {
                 try {
-                    const { error } = await supabaseClient
+                    await supabaseClient
                         .from('partidos_mundialito')
                         .upsert({ 
                             id: 'torneo_actual', 
                             datos: datosTorneo, 
                             brackets: imagenesBrackets,
                             historial: listaHistorialCampeones,
+                            resultados_jornadas: resultadosJornadas, // Se sube la nube
                             updated_at: new Date() 
                         });
-                    if (error) console.error("Error guardando en Supabase:", error);
                 } catch (e) {
                     console.error("Fallo de red en Supabase:", e);
                 }
@@ -1220,12 +1219,13 @@
             let memoriaDatos = localStorage.getItem('superligaa_datosTorneo');
             let memoriaImagenes = localStorage.getItem('superligaa_imagenesBrackets');
             let memoriaHistorial = localStorage.getItem('superligaa_historialCampeones');
+            let memoriaResultados = localStorage.getItem('superligaa_resultadosJornadas');
 
             if(memoriaHistorial) listaHistorialCampeones = JSON.parse(memoriaHistorial);
             if(memoriaDatos) datosTorneo = JSON.parse(memoriaDatos);
             if(memoriaImagenes) imagenesBrackets = JSON.parse(memoriaImagenes);
+            if(memoriaResultados) resultadosJornadas = JSON.parse(memoriaResultados);
 
-            // Intentar traer los datos frescos de la nube de Supabase si está configurado
             if (supabaseClient) {
                 try {
                     const { data, error } = await supabaseClient
@@ -1238,9 +1238,10 @@
                         if(data.datos) datosTorneo = data.datos;
                         if(data.brackets) imagenesBrackets = data.brackets;
                         if(data.historial) listaHistorialCampeones = data.historial;
+                        if(data.resultados_jornadas) resultadosJornadas = data.resultados_jornadas; // Descarga de la nube
                     }
                 } catch (e) {
-                    console.error("Error cargando de Supabase, usando LocalStorage de respaldo.", e);
+                    console.error("Usando caché local.");
                 }
             }
 
@@ -1335,7 +1336,7 @@
                 jugador.nombre = input.value;
                 actualizarEtiquetasCalendario();
                 const wrapperEstrellas = document.getElementById(`estrellas-j-${id}`);
-                if(wrapperEstras) wrapperEstrellas.innerHTML = obtenerEstrellasJugador(input.value);
+                if(wrapperEstrellas) wrapperEstrellas.innerHTML = obtenerEstrellasJugador(input.value);
             }
             persistirDatos();
         }
@@ -1396,43 +1397,48 @@
         }
 
         function actualizarEtiquetasCalendario() {
-            ['A', 'B'].forEach(grupo => {
-                const jornadas = Object.keys(MAPA_JORNADAS_ESTATICO[grupo]);
-                jornadas.forEach((jornadaNombre, jIndex) => {
-                    const j = jIndex + 1;
-                    const partidos = MAPA_JORNADAS_ESTATICO[grupo][jornadaNombre];
-                    const idsJugando = [];
-                    partidos.forEach(p => { idsJugando.push(p.localId); idsJugando.push(p.visitanteId); });
-
-                    const jugadorDescansa = datosTorneo[grupo].find(jugador => !idsJugando.includes(jugador.id));
-                    let descansoEl = document.getElementById(`descanso-${grupo}-j${j}`);
-                    if (descansoEl) descansoEl.innerHTML = jugadorDescansa ? `<i class="fa-solid fa-bed"></i> Descansa: ${jugadorDescansa.nombre}` : "";
-
-                    partidos.forEach((partido, mIndex) => {
-                        const m = mIndex + 1;
-                        let jugadorL = datosTorneo[grupo].find(jug => jug.id === partido.localId);
-                        let jugadorV = datosTorneo[grupo].find(jug => jug.id === partido.visitanteId);
-
-                        let localNameEl = document.getElementById(`text-${grupo}-jj${j}-m${m}-l-name`);
-                        let visitNameEl = document.getElementById(`text-${grupo}-jj${j}-m${m}-v-name`);
-                        if (localNameEl) localNameEl.innerText = jugadorL ? jugadorL.nombre : "Jugador";
-                        if (visitNameEl) visitNameEl.innerText = jugadorV ? jugadorV.nombre : "Jugador";
-
-                        let localImgContainer = document.getElementById(`img-${grupo}-j${j}-m${m}-l`);
-                        if (localImgContainer) localImgContainer.innerHTML = (jugadorL && jugadorL.img) ? `<img src="${jugadorL.img}">` : `<i class="fa-solid fa-flag"></i>`;
-
-                        let visitImgContainer = document.getElementById(`img-${grupo}-j${j}-m${m}-v`);
-                        if (visitImgContainer) visitImgContainer.innerHTML = (jugadorV && jugadorV.img) ? `<img src="${jugadorV.img}">` : `<i class="fa-solid fa-flag"></i>`;
-                    });
-                });
+    ['A', 'B'].forEach(grupo => {
+        const jornadas = Object.keys(MAPA_JORNADAS_ESTATICO[grupo]);
+        jornadas.forEach((jornadaNombre, jIndex) => {
+            const j = jIndex + 1;
+            const partidos = MAPA_JORNADAS_ESTATICO[grupo][jornadaNombre];
+            const idsJugando = [];
+            partidos.forEach(p => { 
+                idsJugando.push(String(p.localId)); 
+                idsJugando.push(String(p.visitanteId)); 
             });
-        }
+
+            // Buscamos quién descansa forzando la comparación a texto
+            const jugadorDescansa = datosTorneo[grupo].find(jugador => !idsJugando.includes(String(jugador.id)));
+            let descansoEl = document.getElementById(`descanso-${grupo}-j${j}`);
+            if (descansoEl) descansoEl.innerHTML = jugadorDescansa ? `<i class="fa-solid fa-bed"></i> Descansa: ${jugadorDescansa.nombre}` : "";
+
+            partidos.forEach((partido, mIndex) => {
+                const m = mIndex + 1;
+                // Usamos == en lugar de === para evitar conflictos entre números y texto (String vs Number)
+                let jugadorL = datosTorneo[grupo].find(jug => jug.id == partido.localId);
+                let jugadorV = datosTorneo[grupo].find(jug => jug.id == partido.visitanteId);
+
+                let localNameEl = document.getElementById(`text-${grupo}-jj${j}-m${m}-l-name`);
+                let visitNameEl = document.getElementById(`text-${grupo}-jj${j}-m${m}-v-name`);
+                if (localNameEl) localNameEl.innerText = jugadorL ? jugadorL.nombre : "Jugador";
+                if (visitNameEl) visitNameEl.innerText = jugadorV ? jugadorV.nombre : "Jugador";
+
+                let localImgContainer = document.getElementById(`img-${grupo}-j${j}-m${m}-l`);
+                if (localImgContainer) localImgContainer.innerHTML = (jugadorL && jugadorL.img) ? `<img src="${jugadorL.img}">` : `<i class="fa-solid fa-flag"></i>`;
+
+                let visitImgContainer = document.getElementById(`img-${grupo}-j${j}-m${m}-v`);
+                if (visitImgContainer) visitImgContainer.innerHTML = (jugadorV && jugadorV.img) ? `<img src="${jugadorV.img}">` : `<i class="fa-solid fa-flag"></i>`;
+            });
+        });
+    });
+}
 
         function guardarScoreCalendario(idInput) {
             let el = document.getElementById(idInput);
             if(el) {
-                localStorage.setItem(`superligaa_cal_${idInput}`, el.value);
-                persistirDatos(); // Guarda el estado unificado completo
+                resultadosJornadas[idInput] = el.value; // Guardado unificado global
+                persistirDatos();
             }
         }
 
@@ -1445,11 +1451,9 @@
                         const m = mIndex + 1;
                         let idL = `input-${grupo}-j${j}-m${m}-l`;
                         let idV = `input-${grupo}-j${j}-m${m}-v`;
-                        let valL = localStorage.getItem(`superligaa_cal_${idL}`);
-                        let valV = localStorage.getItem(`superligaa_cal_${idV}`);
                         
-                        if(valL !== null && document.getElementById(idL)) document.getElementById(idL).value = valL;
-                        if(valV !== null && document.getElementById(idV)) document.getElementById(idV).value = valV;
+                        if(resultadosJornadas[idL] !== undefined && document.getElementById(idL)) document.getElementById(idL).value = resultadosJornadas[idL];
+                        if(resultadosJornadas[idV] !== undefined && document.getElementById(idV)) document.getElementById(idV).value = resultadosJornadas[idV];
                     });
                 });
             });
@@ -1479,8 +1483,8 @@
                     const j = jIndex + 1;
                     MAPA_JORNADAS_ESTATICO[grupo][jornadaNombre].forEach((partido, mIndex) => {
                         const m = mIndex + 1;
-                        let valL = localStorage.getItem(`superligaa_cal_input-${grupo}-j${j}-m${m}-l`);
-                        let valV = localStorage.getItem(`superligaa_cal_input-${grupo}-j${j}-m${m}-v`);
+                        let valL = resultadosJornadas[`input-${grupo}-j${j}-m${m}-l`];
+                        let valV = resultadosJornadas[`input-${grupo}-j${j}-m${m}-v`];
 
                         if (valL && valV && valL !== "" && valV !== "") {
                             let golesL = parseInt(valL); let golesV = parseInt(valV);
@@ -1699,6 +1703,7 @@
             if(confirm("¿Borrar todos los datos del torneo? El Historial se mantendrá intacto.")) {
                 Object.keys(localStorage).forEach(key => { if (key !== 'superligaa_historialCampeones') localStorage.removeItem(key); });
                 datosTorneo = JSON.parse(JSON.stringify(estructuraLimpia));
+                resultadosJornadas = {};
                 imagenesBrackets = { "c1-t1": "", "c1-t2": "", "c2-t1": "", "c2-t2": "", "c3-t1": "", "c3-t2": "", "c4-t1": "", "c4-t2": "", "s1-t1": "", "s1-t2": "", "s2-t1": "", "s2-t2": "", "f-t1": "", "f-t2": "" };
                 persistirDatos();
                 renderizarTablas();
@@ -1738,7 +1743,6 @@
             if(document.getElementById('sidebar') && document.getElementById('sidebar').classList.contains('open')) toggleSidebar();
         }
 
-        // Evento de arranque optimizado asíncronamente
         window.onload = cargarDatosIniciales;
 </script>
 </body>
