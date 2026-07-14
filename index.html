@@ -1125,6 +1125,84 @@
         const CLAVE_SECRETA = "Nell69";
         let isAdmin = false;
 
+        // MAPA ESTÁTICO MANUAL: Aquí modificas los emparejamientos cambiando los IDs de los jugadores
+        const MAPA_JORNADAS_ESTATICO = {
+            A: {
+                "Jornada 1": [
+                    { localId: 1, visitanteId: 6 }, // Dani vs Gabo
+                    { localId: 2, visitanteId: 5 }, // Adrian vs Bronx
+                    { localId: 3, visitanteId: 4 }  // Maxi vs Fran
+                ],
+                "Jornada 2": [
+                    { localId: 7, visitanteId: 3 }, // Robert vs Maxi
+                    { localId: 1, visitanteId: 2 }, // Dani vs Adrian
+                    { localId: 6, visitanteId: 5 }  // Gabo vs Bronx
+                ],
+                "Jornada 3": [
+                    { localId: 4, visitanteId: 7 },
+                    { localId: 3, visitanteId: 1 },
+                    { localId: 2, visitanteId: 6 }
+                ],
+                "Jornada 4": [
+                    { localId: 5, visitanteId: 4 },
+                    { localId: 7, visitanteId: 3 },
+                    { localId: 1, visitanteId: 6 }
+                ],
+                "Jornada 5": [
+                    { localId: 2, visitanteId: 7 },
+                    { localId: 6, visitanteId: 4 },
+                    { localId: 5, visitanteId: 3 }
+                ],
+                "Jornada 6": [
+                    { localId: 1, visitanteId: 5 },
+                    { localId: 3, visitanteId: 2 },
+                    { localId: 4, visitanteId: 7 }
+                ],
+                "Jornada 7": [
+                    { localId: 6, visitanteId: 3 },
+                    { localId: 5, visitanteId: 2 },
+                    { localId: 7, visitanteId: 1 }
+                ]
+            },
+            B: {
+                "Jornada 1": [
+                    { localId: 8, visitanteId: 13 }, // Minibronx vs Nowell
+                    { localId: 9, visitanteId: 12 }, // Brayham vs Oscar
+                    { localId: 10, visitanteId: 11 } // Henryto vs Joel
+                ],
+                "Jornada 2": [
+                    { localId: 14, visitanteId: 10 }, // Cesar vs Henryto
+                    { localId: 8, visitanteId: 9 },   // Minibronx vs Brayham
+                    { localId: 13, visitanteId: 12 }  // Nowell vs Oscar
+                ],
+                "Jornada 3": [
+                    { localId: 11, visitanteId: 14 },
+                    { localId: 10, visitanteId: 8 },
+                    { localId: 9, visitanteId: 13 }
+                ],
+                "Jornada 4": [
+                    { localId: 12, visitanteId: 11 },
+                    { localId: 14, visitanteId: 10 },
+                    { localId: 8, visitanteId: 13 }
+                ],
+                "Jornada 5": [
+                    { localId: 9, visitanteId: 14 },
+                    { localId: 13, visitanteId: 11 },
+                    { localId: 12, visitanteId: 10 }
+                ],
+                "Jornada 6": [
+                    { localId: 8, visitanteId: 12 },
+                    { localId: 10, visitanteId: 9 },
+                    { localId: 11, visitanteId: 14 }
+                ],
+                "Jornada 7": [
+                    { localId: 13, visitanteId: 10 },
+                    { localId: 12, visitanteId: 9 },
+                    { localId: 14, visitanteId: 8 }
+                ]
+            }
+        };
+
         const estructuraLimpia = {
             A: [
                 {id: 1, nombre: "Dani", pj:0, g:0, e:0, p:0, gf:0, gc:0, gd:0, pts:0, img:"escudos/colombia.png"},
@@ -1270,12 +1348,18 @@
                 if (!contenedor) return;
                 contenedor.innerHTML = "";
 
-                for (let j = 1; j <= 7; j++) {
+                const jornadas = Object.keys(MAPA_JORNADAS_ESTATICO[grupo]);
+
+                jornadas.forEach((jornadaNombre, index) => {
+                    const j = index + 1; // Índice numérico para mantener ids unívocos en inputs
                     const bloqueJornada = document.createElement('div');
                     bloqueJornada.className = 'jornada-block';
                     
                     let matchesHTML = '';
-                    for (let m = 1; m <= 3; m++) {
+                    const partidos = MAPA_JORNADAS_ESTATICO[grupo][jornadaNombre];
+
+                    partidos.forEach((partido, mIndex) => {
+                        const m = mIndex + 1;
                         let localInputId = `input-${grupo}-j${j}-m${m}-l`;
                         let visitInputId = `input-${grupo}-j${j}-m${m}-v`;
 
@@ -1300,17 +1384,17 @@
                                 </div>
                             </div>
                         `;
-                    }
+                    });
 
                     bloqueJornada.innerHTML = `
-                        <div class="jornada-header">Jornada ${j}</div>
+                        <div class="jornada-header">${jornadaNombre}</div>
                         <div class="matches-list">
                             ${matchesHTML}
                         </div>
                         <div class="jornada-descanso-badge" id="descanso-${grupo}-j${j}" style="text-align: center; font-size: 0.9em; opacity: 0.8; margin-top: 12px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.1); color: #00ffcc; font-weight: bold;"></div>
                     `;
                     contenedor.appendChild(bloqueJornada);
-                }
+                });
             });
             actualizarEtiquetasCalendario();
             recuperarScoresCalendario();
@@ -1318,42 +1402,31 @@
 
         function actualizarEtiquetasCalendario() {
             ['A', 'B'].forEach(grupo => {
-                const idBase = grupo === 'A' ? 1 : 8;
-                const jugadores = [];
-                
-                // Mapeamos los 7 jugadores en un array ordenado (0 al 6) basado en su ID original
-                for (let i = 0; i < 7; i++) {
-                    const idBuscado = idBase + i;
-                    jugadores.push(datosTorneo[grupo].find(j => j.id === idBuscado));
-                }
+                const jornadas = Object.keys(MAPA_JORNADAS_ESTATICO[grupo]);
 
-                // ALGORITMO ROUND ROBIN DINÁMICO PERFECTO PARA 7 JUGADORES
-                for (let j = 1; j <= 7; j++) {
-                    let partidosJornada = [];
-                    let idxDescanso = (j - 1) % 7; 
-                    let jugadorLibre = jugadores[idxDescanso];
+                jornadas.forEach((jornadaNombre, jIndex) => {
+                    const j = jIndex + 1;
+                    const partidos = MAPA_JORNADAS_ESTATICO[grupo][jornadaNombre];
+                    
+                    // Identificar quién descansa en esta jornada (quien no esté mapeado en los partidos actuales)
+                    const idsJugando = [];
+                    partidos.forEach(p => {
+                        idsJugando.push(p.localId);
+                        idsJugando.push(p.visitanteId);
+                    });
 
-                    let activos = [];
-                    for (let k = 0; k < 7; k++) {
-                        if (k !== idxDescanso) activos.push(k);
-                    }
-
-                    // Emparejamiento perfecto balanceado
-                    partidosJornada.push([activos[0], activos[5]]);
-                    partidosJornada.push([activos[1], activos[4]]);
-                    partidosJornada.push([activos[2], activos[3]]);
+                    const jugadorDescansa = datosTorneo[grupo].find(jugador => !idsJugando.includes(jugador.id));
 
                     let descansoEl = document.getElementById(`descanso-${grupo}-j${j}`);
                     if (descansoEl) {
-                        descansoEl.innerHTML = jugadorLibre ? `<i class="fa-solid fa-bed"></i> Descansa: ${jugadorLibre.nombre}` : "";
+                        descansoEl.innerHTML = jugadorDescansa ? `<i class="fa-solid fa-bed"></i> Descansa: ${jugadorDescansa.nombre}` : "";
                     }
 
-                    for (let m = 1; m <= 3; m++) {
-                        let idxL = partidosJornada[m - 1][0];
-                        let idxV = partidosJornada[m - 1][1];
+                    partidos.forEach((partido, mIndex) => {
+                        const m = mIndex + 1;
                         
-                        let jugadorL = jugadores[idxL];
-                        let jugadorV = jugadores[idxV];
+                        let jugadorL = datosTorneo[grupo].find(jug => jug.id === partido.localId);
+                        let jugadorV = datosTorneo[grupo].find(jug => jug.id === partido.visitanteId);
 
                         let localNameEl = document.getElementById(`text-${grupo}-jj${j}-m${m}-l-name`);
                         let visitNameEl = document.getElementById(`text-${grupo}-jj${j}-m${m}-v-name`);
@@ -1370,8 +1443,8 @@
                         if (visitImgContainer) {
                             visitImgContainer.innerHTML = (jugadorV && jugadorV.img) ? `<img src="${jugadorV.img}">` : `<i class="fa-solid fa-flag"></i>`;
                         }
-                    }
-                }
+                    });
+                });
             });
         }
 
@@ -1384,8 +1457,13 @@
 
         function recuperarScoresCalendario() {
             ['A', 'B'].forEach(grupo => {
-                for (let j = 1; j <= 7; j++) {
-                    for (let m = 1; m <= 3; m++) {
+                const jornadas = Object.keys(MAPA_JORNADAS_ESTATICO[grupo]);
+                jornadas.forEach((jornadaNombre, jIndex) => {
+                    const j = jIndex + 1;
+                    const partidos = MAPA_JORNADAS_ESTATICO[grupo][jornadaNombre];
+                    
+                    partidos.forEach((partido, mIndex) => {
+                        const m = mIndex + 1;
                         let idL = `input-${grupo}-j${j}-m${m}-l`;
                         let idV = `input-${grupo}-j${j}-m${m}-v`;
                         
@@ -1397,8 +1475,8 @@
 
                         if(valL !== null && inputL) inputL.value = valL;
                         if(valV !== null && inputV) inputV.value = valV;
-                    }
-                }
+                    });
+                });
             });
         }
 
@@ -1424,28 +1502,14 @@
                     j.pj = 0; j.g = 0; j.e = 0; j.p = 0; j.gf = 0; j.gc = 0; j.gd = 0; j.pts = 0;
                 });
 
-                const idBase = grupo === 'A' ? 1 : 8;
-                const jugadores = [];
-                for (let i = 0; i < 7; i++) {
-                    const idBuscado = idBase + i;
-                    jugadores.push(datosTorneo[grupo].find(j => j.id === idBuscado));
-                }
+                const jornadas = Object.keys(MAPA_JORNADAS_ESTATICO[grupo]);
 
-                // Cálculo exacto usando el mismo algoritmo dinámico Round Robin
-                for (let j = 1; j <= 7; j++) {
-                    let idxDescanso = (j - 1) % 7;
-                    let activos = [];
-                    for (let k = 0; k < 7; k++) {
-                        if (k !== idxDescanso) activos.push(k);
-                    }
+                jornadas.forEach((jornadaNombre, jIndex) => {
+                    const j = jIndex + 1;
+                    const partidos = MAPA_JORNADAS_ESTATICO[grupo][jornadaNombre];
 
-                    let partidosJornada = [
-                        [activos[0], activos[5]],
-                        [activos[1], activos[4]],
-                        [activos[2], activos[3]]
-                    ];
-
-                    for (let m = 1; m <= 3; m++) {
+                    partidos.forEach((partido, mIndex) => {
+                        const m = mIndex + 1;
                         let idL = `input-${grupo}-j${j}-m${m}-l`;
                         let idV = `input-${grupo}-j${j}-m${m}-v`;
 
@@ -1456,11 +1520,8 @@
                             let golesL = parseInt(valL);
                             let golesV = parseInt(valV);
 
-                            let idxL = partidosJornada[m - 1][0];
-                            let idxV = partidosJornada[m - 1][1];
-
-                            let jugadorL = jugadores[idxL];
-                            let jugadorV = jugadores[idxV];
+                            let jugadorL = datosTorneo[grupo].find(jug => jug.id === partido.localId);
+                            let jugadorV = datosTorneo[grupo].find(jug => jug.id === partido.visitanteId);
 
                             if (jugadorL && jugadorV) {
                                 jugadorL.pj++;
@@ -1488,8 +1549,8 @@
                                 jugadorV.gd = jugadorV.gf - jugadorV.gc;
                             }
                         }
-                    }
-                }
+                    });
+                });
 
                 // Ordenación justa y fija
                 datosTorneo[grupo].sort((a, b) => {
@@ -1514,7 +1575,7 @@
             configurarCeldaBracket('c4-t2', datosTorneo['B'][2]);
 
             persistirEnLocalStorage();
-            alert("¡Tablas calculadas y actualizadas automáticamente desde las jornadas con éxito!");
+            alert("¡Tablas calculadas y actualizadas de manera manual basadas en el mapa estático!");
             calcularBrackets();
         }
 
