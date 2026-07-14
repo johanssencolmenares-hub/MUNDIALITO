@@ -1121,7 +1121,7 @@
         let isAdmin = false;
 
         // ==========================================
-        // CONFIGURACIÓN DE SUPABASE
+        // CONFIGURACIÓN DE SUPABASE (REPLÁZALO CUANDO TENGAS TU CUENTA)
         // ==========================================
         const SUPABASE_CONFIG = {
             url: "https://pdbdfrqifmiccbofrsck.supabase.co", 
@@ -1130,6 +1130,7 @@
         
         let supabaseClient = null;
 
+        // Inicialización segura de Supabase
         if (SUPABASE_CONFIG.url !== "TU_SUPABASE_URL_AQUI" && SUPABASE_CONFIG.anonKey !== "TU_SUPABASE_ANON_KEY_AQUI") {
             supabaseClient = supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
         }
@@ -1177,7 +1178,6 @@
         };
 
         let datosTorneo = JSON.parse(JSON.stringify(estructuraLimpia));
-        let resultadosJornadas = {}; 
         let imagenesBrackets = {
             "c1-t1": "", "c1-t2": "", "c2-t1": "", "c2-t2": "",
             "c3-t1": "", "c3-t2": "", "c4-t1": "", "c4-t2": "",
@@ -1188,24 +1188,28 @@
             { id: 1, year: "2025", jugador: "Dani", equipo: "Wolves", escudo: "escudos/wolves.png", subcampeon: "Robert", resultado: "3 - 2" }
         ];
 
+        // ==========================================
+        // FUNCIONES DE PERSISTENCIA (HÍBRIDAS: SUPABASE + LOCALSTORAGE)
+        // ==========================================
         async function persistirDatos() {
+            // Guardado tradicional de contingencia en LocalStorage
             localStorage.setItem('superligaa_datosTorneo', JSON.stringify(datosTorneo));
             localStorage.setItem('superligaa_imagenesBrackets', JSON.stringify(imagenesBrackets));
             localStorage.setItem('superligaa_historialCampeones', JSON.stringify(listaHistorialCampeones));
-            localStorage.setItem('superligaa_resultadosJornadas', JSON.stringify(resultadosJornadas));
 
+            // Guardado en la Nube con Supabase si está activo
             if (supabaseClient) {
                 try {
-                    await supabaseClient
+                    const { error } = await supabaseClient
                         .from('partidos_mundialito')
                         .upsert({ 
                             id: 'torneo_actual', 
                             datos: datosTorneo, 
                             brackets: imagenesBrackets,
                             historial: listaHistorialCampeones,
-                            resultados_jornadas: resultadosJornadas, 
                             updated_at: new Date() 
                         });
+                    if (error) console.error("Error guardando en Supabase:", error);
                 } catch (e) {
                     console.error("Fallo de red en Supabase:", e);
                 }
@@ -1216,13 +1220,12 @@
             let memoriaDatos = localStorage.getItem('superligaa_datosTorneo');
             let memoriaImagenes = localStorage.getItem('superligaa_imagenesBrackets');
             let memoriaHistorial = localStorage.getItem('superligaa_historialCampeones');
-            let memoriaResultados = localStorage.getItem('superligaa_resultadosJornadas');
 
             if(memoriaHistorial) listaHistorialCampeones = JSON.parse(memoriaHistorial);
             if(memoriaDatos) datosTorneo = JSON.parse(memoriaDatos);
             if(memoriaImagenes) imagenesBrackets = JSON.parse(memoriaImagenes);
-            if(memoriaResultados) resultadosJornadas = JSON.parse(memoriaResultados);
 
+            // Intentar traer los datos frescos de la nube de Supabase si está configurado
             if (supabaseClient) {
                 try {
                     const { data, error } = await supabaseClient
@@ -1235,21 +1238,14 @@
                         if(data.datos) datosTorneo = data.datos;
                         if(data.brackets) imagenesBrackets = data.brackets;
                         if(data.historial) listaHistorialCampeones = data.historial;
-                        if(data.resultados_jornadas) resultadosJornadas = data.resultados_jornadas; 
                     }
                 } catch (e) {
-                    console.error("Usando caché local.");
+                    console.error("Error cargando de Supabase, usando LocalStorage de respaldo.", e);
                 }
             }
 
-            // CORRECCIÓN DE ORDEN: Primero generamos la estructura visual del HTML
-            generarCalendariosHTML();
             renderizarTablas();
-            
-            // Luego forzamos a recuperar los scores e inyectar etiquetas de texto de forma segura
-            recuperarScoresCalendario();
-            actualizarEtiquetasCalendario();
-            
+            generarCalendariosHTML();
             recuperarInputsYLabelsBrackets();
             calcularBrackets();
             renderizarHistorialCampeones();
@@ -1339,7 +1335,7 @@
                 jugador.nombre = input.value;
                 actualizarEtiquetasCalendario();
                 const wrapperEstrellas = document.getElementById(`estrellas-j-${id}`);
-                if(wrapperEstrellas) wrapperEstrellas.innerHTML = obtenerEstrellasJugador(input.value);
+                if(wrapperEstras) wrapperEstrellas.innerHTML = obtenerEstrellasJugador(input.value);
             }
             persistirDatos();
         }
@@ -1395,6 +1391,8 @@
                     contenedor.appendChild(bloqueJornada);
                 });
             });
+            actualizarEtiquetasCalendario();
+            recuperarScoresCalendario();
         }
 
         function actualizarEtiquetasCalendario() {
@@ -1433,8 +1431,8 @@
         function guardarScoreCalendario(idInput) {
             let el = document.getElementById(idInput);
             if(el) {
-                resultadosJornadas[idInput] = el.value; 
-                persistirDatos();
+                localStorage.setItem(`superligaa_cal_${idInput}`, el.value);
+                persistirDatos(); // Guarda el estado unificado completo
             }
         }
 
@@ -1447,9 +1445,11 @@
                         const m = mIndex + 1;
                         let idL = `input-${grupo}-j${j}-m${m}-l`;
                         let idV = `input-${grupo}-j${j}-m${m}-v`;
+                        let valL = localStorage.getItem(`superligaa_cal_${idL}`);
+                        let valV = localStorage.getItem(`superligaa_cal_${idV}`);
                         
-                        if(resultadosJornadas[idL] !== undefined && document.getElementById(idL)) document.getElementById(idL).value = resultadosJornadas[idL];
-                        if(resultadosJornadas[idV] !== undefined && document.getElementById(idV)) document.getElementById(idV).value = resultadosJornadas[idV];
+                        if(valL !== null && document.getElementById(idL)) document.getElementById(idL).value = valL;
+                        if(valV !== null && document.getElementById(idV)) document.getElementById(idV).value = valV;
                     });
                 });
             });
@@ -1479,8 +1479,8 @@
                     const j = jIndex + 1;
                     MAPA_JORNADAS_ESTATICO[grupo][jornadaNombre].forEach((partido, mIndex) => {
                         const m = mIndex + 1;
-                        let valL = resultadosJornadas[`input-${grupo}-j${j}-m${m}-l`];
-                        let valV = resultadosJornadas[`input-${grupo}-j${j}-m${m}-v`];
+                        let valL = localStorage.getItem(`superligaa_cal_input-${grupo}-j${j}-m${m}-l`);
+                        let valV = localStorage.getItem(`superligaa_cal_input-${grupo}-j${j}-m${m}-v`);
 
                         if (valL && valV && valL !== "" && valV !== "") {
                             let golesL = parseInt(valL); let golesV = parseInt(valV);
@@ -1699,7 +1699,6 @@
             if(confirm("¿Borrar todos los datos del torneo? El Historial se mantendrá intacto.")) {
                 Object.keys(localStorage).forEach(key => { if (key !== 'superligaa_historialCampeones') localStorage.removeItem(key); });
                 datosTorneo = JSON.parse(JSON.stringify(estructuraLimpia));
-                resultadosJornadas = {};
                 imagenesBrackets = { "c1-t1": "", "c1-t2": "", "c2-t1": "", "c2-t2": "", "c3-t1": "", "c3-t2": "", "c4-t1": "", "c4-t2": "", "s1-t1": "", "s1-t2": "", "s2-t1": "", "s2-t2": "", "f-t1": "", "f-t2": "" };
                 persistirDatos();
                 renderizarTablas();
@@ -1739,6 +1738,7 @@
             if(document.getElementById('sidebar') && document.getElementById('sidebar').classList.contains('open')) toggleSidebar();
         }
 
+        // Evento de arranque optimizado asíncronamente
         window.onload = cargarDatosIniciales;
 </script>
 </body>
