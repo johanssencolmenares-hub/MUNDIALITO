@@ -845,10 +845,21 @@
             .btn-guardar-container { grid-column: span 1; text-align: center; flex-direction: column; }
             .btn-guardar { width: 100%; }
             .bracket-wrapper { grid-template-columns: 1fr; gap: 30px; }
-            .fixture-match-row { flex-direction: column; gap: 8px; text-align: center; padding: 14px; }
-            .fixture-team { width: 100%; }
-            .fixture-team.team-local { flex-direction: column-reverse; justify-content: center; }
-            .fixture-team.team-visitante { flex-direction: column; justify-content: center; }
+            
+            /* Ajuste crítico de visualización en teléfonos */
+            .fixture-match-row { 
+                flex-direction: row; 
+                justify-content: space-between;
+                align-items: center;
+                gap: 4px; 
+                padding: 12px 8px; 
+            }
+            .fixture-team { width: 35%; flex-grow: 1; }
+            .fixture-team span { font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            .fixture-team.team-local { flex-direction: row; justify-content: flex-end; text-align: right; }
+            .fixture-team.team-visitante { flex-direction: row; justify-content: flex-start; text-align: left; }
+            .fixture-score-inputs { flex-shrink: 0; padding: 4px; }
+            
             .header-historial { flex-direction: column; gap: 12px; align-items: flex-start; }
             .btn-add-history { width: 100%; justify-content: center; }
         }
@@ -1121,7 +1132,7 @@
         let isAdmin = false;
 
         // ==========================================
-        // CONFIGURACIÓN DE SUPABASE (REPLÁZALO CUANDO TENGAS TU CUENTA)
+        // CONFIGURACIÓN DE SUPABASE
         // ==========================================
         const SUPABASE_CONFIG = {
             url: "https://pdbdfrqifmiccbofrsck.supabase.co", 
@@ -1130,7 +1141,6 @@
         
         let supabaseClient = null;
 
-        // Inicialización segura de Supabase
         if (SUPABASE_CONFIG.url !== "TU_SUPABASE_URL_AQUI" && SUPABASE_CONFIG.anonKey !== "TU_SUPABASE_ANON_KEY_AQUI") {
             supabaseClient = supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
         }
@@ -1174,7 +1184,9 @@
                 {id: 12, nombre: "Oscar", pj:0, g:0, e:0, p:0, gf:0, gc:0, gd:0, pts:0, img:"escudos/republicacheca.png"},
                 {id: 13, nombre: "Nowell", pj:0, g:0, e:0, p:0, gf:0, gc:0, gd:0, pts:0, img:"escudos/ecuador.png"},
                 {id: 14, nombre: "Cesar", pj:0, g:0, e:0, p:0, gf:0, gc:0, gd:0, pts:0, img:"escudos/Paraguay.png"}
-            ]
+            ],
+            // Contenedor unificado para guardar los marcadores en Supabase
+            marcadores: {} 
         };
 
         let datosTorneo = JSON.parse(JSON.stringify(estructuraLimpia));
@@ -1189,15 +1201,13 @@
         ];
 
         // ==========================================
-        // FUNCIONES DE PERSISTENCIA (HÍBRIDAS: SUPABASE + LOCALSTORAGE)
+        // FUNCIONES DE PERSISTENCIA (HÍBRIDAS OPTIMIZADAS)
         // ==========================================
         async function persistirDatos() {
-            // Guardado tradicional de contingencia en LocalStorage
             localStorage.setItem('superligaa_datosTorneo', JSON.stringify(datosTorneo));
             localStorage.setItem('superligaa_imagenesBrackets', JSON.stringify(imagenesBrackets));
             localStorage.setItem('superligaa_historialCampeones', JSON.stringify(listaHistorialCampeones));
 
-            // Guardado en la Nube con Supabase si está activo
             if (supabaseClient) {
                 try {
                     const { error } = await supabaseClient
@@ -1225,7 +1235,6 @@
             if(memoriaDatos) datosTorneo = JSON.parse(memoriaDatos);
             if(memoriaImagenes) imagenesBrackets = JSON.parse(memoriaImagenes);
 
-            // Intentar traer los datos frescos de la nube de Supabase si está configurado
             if (supabaseClient) {
                 try {
                     const { data, error } = await supabaseClient
@@ -1243,6 +1252,9 @@
                     console.error("Error cargando de Supabase, usando LocalStorage de respaldo.", e);
                 }
             }
+
+            // Asegurar que la propiedad de marcadores exista
+            if (!datosTorneo.marcadores) datosTorneo.marcadores = {};
 
             renderizarTablas();
             generarCalendariosHTML();
@@ -1335,7 +1347,7 @@
                 jugador.nombre = input.value;
                 actualizarEtiquetasCalendario();
                 const wrapperEstrellas = document.getElementById(`estrellas-j-${id}`);
-                if(wrapperEstras) wrapperEstrellas.innerHTML = obtenerEstrellasJugador(input.value);
+                if(wrapperEstrellas) wrapperEstrellas.innerHTML = obtenerEstrellasJugador(input.value);
             }
             persistirDatos();
         }
@@ -1431,8 +1443,10 @@
         function guardarScoreCalendario(idInput) {
             let el = document.getElementById(idInput);
             if(el) {
+                // Almacenamos el score dentro del árbol unificado de datosTorneo para enviarlo a Supabase
+                datosTorneo.marcadores[idInput] = el.value;
                 localStorage.setItem(`superligaa_cal_${idInput}`, el.value);
-                persistirDatos(); // Guarda el estado unificado completo
+                persistirDatos(); 
             }
         }
 
@@ -1445,8 +1459,10 @@
                         const m = mIndex + 1;
                         let idL = `input-${grupo}-j${j}-m${m}-l`;
                         let idV = `input-${grupo}-j${j}-m${m}-v`;
-                        let valL = localStorage.getItem(`superligaa_cal_${idL}`);
-                        let valV = localStorage.getItem(`superligaa_cal_${idV}`);
+                        
+                        // Buscamos primero en el objeto sincronizado, si no, usamos fallback local
+                        let valL = (datosTorneo.marcadores && datosTorneo.marcadores[idL] !== undefined) ? datosTorneo.marcadores[idL] : localStorage.getItem(`superligaa_cal_${idL}`);
+                        let valV = (datosTorneo.marcadores && datosTorneo.marcadores[idV] !== undefined) ? datosTorneo.marcadores[idV] : localStorage.getItem(`superligaa_cal_${idV}`);
                         
                         if(valL !== null && document.getElementById(idL)) document.getElementById(idL).value = valL;
                         if(valV !== null && document.getElementById(idV)) document.getElementById(idV).value = valV;
@@ -1479,8 +1495,11 @@
                     const j = jIndex + 1;
                     MAPA_JORNADAS_ESTATICO[grupo][jornadaNombre].forEach((partido, mIndex) => {
                         const m = mIndex + 1;
-                        let valL = localStorage.getItem(`superligaa_cal_input-${grupo}-j${j}-m${m}-l`);
-                        let valV = localStorage.getItem(`superligaa_cal_input-${grupo}-j${j}-m${m}-v`);
+                        let idL = `input-${grupo}-j${j}-m${m}-l`;
+                        let idV = `input-${grupo}-j${j}-m${m}-v`;
+                        
+                        let valL = (datosTorneo.marcadores && datosTorneo.marcadores[idL] !== undefined) ? datosTorneo.marcadores[idL] : localStorage.getItem(`superligaa_cal_${idL}`);
+                        let valV = (datosTorneo.marcadores && datosTorneo.marcadores[idV] !== undefined) ? datosTorneo.marcadores[idV] : localStorage.getItem(`superligaa_cal_${idV}`);
 
                         if (valL && valV && valL !== "" && valV !== "") {
                             let golesL = parseInt(valL); let golesV = parseInt(valV);
@@ -1625,7 +1644,6 @@
                 return;
             }
 
-            listaHistorialCampeones.sort((a,b) => parseInt(b.year) - parseInt(a.year));
             listaHistorialCampeones.forEach(item => {
                 const card = document.createElement('div');
                 card.className = 'history-card';
@@ -1699,6 +1717,7 @@
             if(confirm("¿Borrar todos los datos del torneo? El Historial se mantendrá intacto.")) {
                 Object.keys(localStorage).forEach(key => { if (key !== 'superligaa_historialCampeones') localStorage.removeItem(key); });
                 datosTorneo = JSON.parse(JSON.stringify(estructuraLimpia));
+                datosTorneo.marcadores = {};
                 imagenesBrackets = { "c1-t1": "", "c1-t2": "", "c2-t1": "", "c2-t2": "", "c3-t1": "", "c3-t2": "", "c4-t1": "", "c4-t2": "", "s1-t1": "", "s1-t2": "", "s2-t1": "", "s2-t2": "", "f-t1": "", "f-t2": "" };
                 persistirDatos();
                 renderizarTablas();
@@ -1738,7 +1757,6 @@
             if(document.getElementById('sidebar') && document.getElementById('sidebar').classList.contains('open')) toggleSidebar();
         }
 
-        // Evento de arranque optimizado asíncronamente
         window.onload = cargarDatosIniciales;
 </script>
 </body>
