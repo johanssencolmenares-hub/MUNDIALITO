@@ -6,6 +6,8 @@
     <title>Mundialito 2026</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- CDN de Supabase Oficial -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --bg-body: #0f1115;
@@ -597,7 +599,6 @@
             font-style: italic;
         }
 
-        /* --- ESTILOS COMPLEMENTARIOS: HISTORIAL DE CAMPEONES --- */
         .header-historial {
             display: flex;
             justify-content: space-between;
@@ -859,9 +860,7 @@
     <div class="sidebar-overlay" id="overlay" onclick="toggleSidebar()"></div>
 
     <div class="sidebar" id="sidebar">
-        <div class="brand">
-            <i class="fa-solid fa-trophy"></i> BronxScore
-        </div>
+        <div class="brand"><i class="fa-solid fa-trophy"></i> BronxScore</div>
         <div class="nav-container">
             <div class="nav-section-title">Fase de Grupos</div>
             <div class="nav-item active" id="nav-grupos" onclick="switchMainView('grupos')">
@@ -870,12 +869,10 @@
             <div class="nav-item" id="nav-jornadas" onclick="switchMainView('jornadas')">
                 <i class="fa-solid fa-calendar-days"></i> Partidos y Jornadas
             </div>
-
             <div class="nav-section-title">Fase Eliminatoria</div>
             <div class="nav-item" id="nav-eliminatorio" onclick="switchMainView('eliminatorio')">
                 <i class="fa-solid fa-diagram-project"></i> Cuadro Eliminatorio
             </div>
-
             <div class="nav-section-title">Historial</div>
             <div class="nav-item" id="nav-historial" onclick="switchMainView('historial')">
                 <i class="fa-solid fa-crown"></i> Historial de Campeones
@@ -892,7 +889,6 @@
         </div>
 
         <div class="content-body">
-            
             <div class="tabs-header" id="main-tabs-header">
                 <div class="tab-btn active-tab" id="tab-grupos-btn" onclick="switchMainView('grupos')">Fase de Grupos</div>
                 <div class="tab-btn" id="tab-jornadas-btn" onclick="switchMainView('jornadas')">Partidos / Jornadas</div>
@@ -1117,7 +1113,6 @@
                 </div>
                 <div class="history-grid" id="history-grid-container"></div>
             </div>
-
         </div>
     </div>
 
@@ -1125,90 +1120,41 @@
         const CLAVE_SECRETA = "cristiano";
         let isAdmin = false;
 
-        // MAPA ESTÁTICO MANUAL: Aquí modificas los emparejamientos cambiando los IDs de los jugadores
-        const MAPA_JORNADAS_ESTATICO = {
-    A: {
-        "Jornada 1": [
-            { localId: 1, visitanteId: 6 }, //Dani vs Gabo       
-            { localId: 4, visitanteId: 5 }, //Fran vs Bronx     
-            { localId: 3, visitanteId: 2 }  //Maxi vs Adrian   
-        ], // Descansa: 7 (Robert)
-        "Jornada 2": [
-            { localId: 7, visitanteId: 3 }, //Robert vs Maxi    
-            { localId: 1, visitanteId: 4 }, //Dani vs Fran     
-            { localId: 2, visitanteId: 5 }  //Adrian vs Bronx   
-        ], // Descansa: 6 (Gabo)
-        "Jornada 3": [
-            { localId: 4, visitanteId: 7 }, //Fran vs Robert     
-            { localId: 2, visitanteId: 6 }, //Adrian vs Gabo
-            { localId: 1, visitanteId: 3 }  //Dani vs Maxi
-        ], // Descansa: 5 (Bronx)
-        "Jornada 4": [
-            { localId: 1, visitanteId: 2 }, //Dani vs Adrian
-            { localId: 7, visitanteId: 5 }, //Robert vs Bronx
-            { localId: 3, visitanteId: 6 }  //Maxi vs Gabo
-        ], // Descansa: 4 (Fran)
-        "Jornada 5": [
-            { localId: 6, visitanteId: 5 }, //Gabo vs Bronx
-            { localId: 7, visitanteId: 1 }, //Robert vs Dani
-            { localId: 4, visitanteId: 2 }  //Fran vs Adrian
-        ], // Descansa: 3 (Maxi)
-        "Jornada 6": [
-            { localId: 5, visitanteId: 1 }, //Bronx vs Dani
-            { localId: 3, visitanteId: 4 }, //Maxi vs Fran
-            { localId: 6, visitanteId: 7 }  //Gabo vs Robert
-        ], // Descansa: 2 (Adrian)
-        "Jornada 7": [
-            { localId: 3, visitanteId: 5 }, //Maxi vs Bronx
-            { localId: 7, visitanteId: 2 }, //Robert vs Adrian
-            { localId: 4, visitanteId: 6 }  //Fran vs Gabo
-        ]  // Descansa: 1 (Dani)
-    },
-    B: {
-        "Jornada 1": [
-            { localId: 8, visitanteId: 13 },  //Minibronx vs Nowell                        
-            { localId: 9, visitanteId: 12 },  //Brayham vs Oscar                 
-            { localId: 10, visitanteId: 11 }  //Henryto vs Joel                  
-        ], // Descansa: 14 (Cesar)
-        "Jornada 2": [
-            { localId: 14, visitanteId: 12 }, //Cesar vs Oscar                    
-            { localId: 8, visitanteId: 11 },  //Minibronx vs Joel               
-            { localId: 9, visitanteId: 10 }   //Brayham vs Henryto             
-        ], // Descansa: 13 (Nowell)
-        "Jornada 3": [
-            { localId: 13, visitanteId: 11 },  //Nowell vs Joel                
-            { localId: 14, visitanteId: 10 },  //Cesar vs henryto            
-            { localId: 8, visitanteId: 9 }     //Minibronx vs Brayham
-        ], // Descansa: 12 (Oscar)
-        "Jornada 4": [
-            { localId: 12, visitanteId: 10 },  //Oscar vs henryto
-            { localId: 13, visitanteId: 9 },   //Nowell vs brayham
-            { localId: 14, visitanteId: 8 }    //Cesar vs Minibronx
-        ], // Descansa: 11 (Joel)
-       "Jornada 5": [
-            { localId: 11, visitanteId: 9 },  // Joel vs Brayham
-            { localId: 12, visitanteId: 8 },  // Oscar vs Minibronx
-            { localId: 13, visitanteId: 14 }  // Nowell vs Cesar
-        ], // Descansa: 10 (Henryto)
-        "Jornada 6": [
-            { localId: 10, visitanteId: 8 },  // Henryto vs Minibronx
-            { localId: 11, visitanteId: 14 }, // Joel vs Cesar
-            { localId: 12, visitanteId: 13 }  // Oscar vs Nowell
-        ], // Descansa: 9 (Brayham)
-        "Jornada 7": [
-            { localId: 9, visitanteId: 14 },  // Brayham vs Cesar
-            { localId: 10, visitanteId: 13 }, // Henryto vs Nowell
-            { localId: 11, visitanteId: 12 }  // Joel vs Oscar
-        ] // Descansa: 8 (Minibronx)
-    }
-};
+        // ==========================================
+        // CONFIGURACIÓN DE SUPABASE (REPLÁZALO CUANDO TENGAS TU CUENTA)
+        // ==========================================
+        const SUPABASE_CONFIG = {
+            url: "https://pdbdfrqifmiccbofrsck.supabase.co", 
+            anonKey: "sb_publishable_X8Dk_jDI2H0I3b1yWX0cIw_-Aq2U0gZ
+        };
+        
+        let supabaseClient = null;
 
-// Corrección manual limpia para la última jornada del Grupo B (Descansa ID 8 - Minibronx)
-MAPA_JORNADAS_ESTATICO.B["Jornada 7"] = [
-    { localId: 9, visitanteId: 14 },
-    { localId: 10, visitanteId: 13 },
-    { localId: 11, visitanteId: 12 }
-];
+        // Inicialización segura de Supabase
+        if (SUPABASE_CONFIG.url !== "TU_SUPABASE_URL_AQUI" && SUPABASE_CONFIG.anonKey !== "TU_SUPABASE_ANON_KEY_AQUI") {
+            supabaseClient = supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+        }
+
+        const MAPA_JORNADAS_ESTATICO = {
+            A: {
+                "Jornada 1": [{ localId: 1, visitanteId: 6 }, { localId: 4, visitanteId: 5 }, { localId: 3, visitanteId: 2 }],
+                "Jornada 2": [{ localId: 7, visitanteId: 3 }, { localId: 1, visitanteId: 4 }, { localId: 2, visitanteId: 5 }],
+                "Jornada 3": [{ localId: 4, visitanteId: 7 }, { localId: 2, visitanteId: 6 }, { localId: 1, visitanteId: 3 }],
+                "Jornada 4": [{ localId: 1, visitanteId: 2 }, { localId: 7, visitanteId: 5 }, { localId: 3, visitanteId: 6 }],
+                "Jornada 5": [{ localId: 6, visitanteId: 5 }, { localId: 7, visitanteId: 1 }, { localId: 4, visitanteId: 2 }],
+                "Jornada 6": [{ localId: 5, visitanteId: 1 }, { localId: 3, visitanteId: 4 }, { localId: 6, visitanteId: 7 }],
+                "Jornada 7": [{ localId: 3, visitanteId: 5 }, { localId: 7, visitanteId: 2 }, { localId: 4, visitanteId: 6 }]
+            },
+            B: {
+                "Jornada 1": [{ localId: 8, visitanteId: 13 }, { localId: 9, visitanteId: 12 }, { localId: 10, visitanteId: 11 }],
+                "Jornada 2": [{ localId: 14, visitanteId: 12 }, { localId: 8, visitanteId: 11 }, { localId: 9, visitanteId: 10 }],
+                "Jornada 3": [{ localId: 13, visitanteId: 11 }, { localId: 14, visitanteId: 10 }, { localId: 8, visitanteId: 9 }],
+                "Jornada 4": [{ localId: 12, visitanteId: 10 }, { localId: 13, visitanteId: 9 }, { localId: 14, visitanteId: 8 }],
+                "Jornada 5": [{ localId: 11, visitanteId: 9 }, { localId: 12, visitanteId: 8 }, { localId: 13, visitanteId: 14 }],
+                "Jornada 6": [{ localId: 10, visitanteId: 8 }, { localId: 11, visitanteId: 14 }, { localId: 12, visitanteId: 13 }],
+                "Jornada 7": [{ localId: 9, visitanteId: 14 }, { localId: 10, visitanteId: 13 }, { localId: 11, visitanteId: 12 }]
+            }
+        };
 
         const estructuraLimpia = {
             A: [
@@ -1232,25 +1178,78 @@ MAPA_JORNADAS_ESTATICO.B["Jornada 7"] = [
         };
 
         let datosTorneo = JSON.parse(JSON.stringify(estructuraLimpia));
-
         let imagenesBrackets = {
             "c1-t1": "", "c1-t2": "", "c2-t1": "", "c2-t2": "",
             "c3-t1": "", "c3-t2": "", "c4-t1": "", "c4-t2": "",
             "s1-t1": "", "s1-t2": "", "s2-t1": "", "s2-t2": "",
             "f-t1": "", "f-t2": ""
         };
-
         let listaHistorialCampeones = [
-            {
-                id: 1,
-                year: "2025",
-                jugador: "Dani",
-                equipo: "Wolves",
-                escudo: "escudos/wolves.png",
-                subcampeon: "Robert",
-                resultado: "3 - 2"
-            }
+            { id: 1, year: "2025", jugador: "Dani", equipo: "Wolves", escudo: "escudos/wolves.png", subcampeon: "Robert", resultado: "3 - 2" }
         ];
+
+        // ==========================================
+        // FUNCIONES DE PERSISTENCIA (HÍBRIDAS: SUPABASE + LOCALSTORAGE)
+        // ==========================================
+        async function persistirDatos() {
+            // Guardado tradicional de contingencia en LocalStorage
+            localStorage.setItem('superligaa_datosTorneo', JSON.stringify(datosTorneo));
+            localStorage.setItem('superligaa_imagenesBrackets', JSON.stringify(imagenesBrackets));
+            localStorage.setItem('superligaa_historialCampeones', JSON.stringify(listaHistorialCampeones));
+
+            // Guardado en la Nube con Supabase si está activo
+            if (supabaseClient) {
+                try {
+                    const { error } = await supabaseClient
+                        .from('partidos_mundialito')
+                        .upsert({ 
+                            id: 'torneo_actual', 
+                            datos: datosTorneo, 
+                            brackets: imagenesBrackets,
+                            historial: listaHistorialCampeones,
+                            updated_at: new Date() 
+                        });
+                    if (error) console.error("Error guardando en Supabase:", error);
+                } catch (e) {
+                    console.error("Fallo de red en Supabase:", e);
+                }
+            }
+        }
+
+        async function cargarDatosIniciales() {
+            let memoriaDatos = localStorage.getItem('superligaa_datosTorneo');
+            let memoriaImagenes = localStorage.getItem('superligaa_imagenesBrackets');
+            let memoriaHistorial = localStorage.getItem('superligaa_historialCampeones');
+
+            if(memoriaHistorial) listaHistorialCampeones = JSON.parse(memoriaHistorial);
+            if(memoriaDatos) datosTorneo = JSON.parse(memoriaDatos);
+            if(memoriaImagenes) imagenesBrackets = JSON.parse(memoriaImagenes);
+
+            // Intentar traer los datos frescos de la nube de Supabase si está configurado
+            if (supabaseClient) {
+                try {
+                    const { data, error } = await supabaseClient
+                        .from('partidos_mundialito')
+                        .select('*')
+                        .eq('id', 'torneo_actual')
+                        .single();
+                    
+                    if (data && !error) {
+                        if(data.datos) datosTorneo = data.datos;
+                        if(data.brackets) imagenesBrackets = data.brackets;
+                        if(data.historial) listaHistorialCampeones = data.historial;
+                    }
+                } catch (e) {
+                    console.error("Error cargando de Supabase, usando LocalStorage de respaldo.", e);
+                }
+            }
+
+            renderizarTablas();
+            generarCalendariosHTML();
+            recuperarInputsYLabelsBrackets();
+            calcularBrackets();
+            renderizarHistorialCampeones();
+        }
 
         function toggleModoAdmin() {
             if (!isAdmin) {
@@ -1278,12 +1277,6 @@ MAPA_JORNADAS_ESTATICO.B["Jornada 7"] = [
             if(overlay) overlay.style.display = sidebar.classList.contains('open') ? 'block' : 'none';
         }
 
-        function persistirEnLocalStorage() {
-            localStorage.setItem('superligaa_datosTorneo', JSON.stringify(datosTorneo));
-            localStorage.setItem('superligaa_imagenesBrackets', JSON.stringify(imagenesBrackets));
-            localStorage.setItem('superligaa_historialCampeones', JSON.stringify(listaHistorialCampeones));
-        }
-
         function obtenerEstrellasJugador(nombreJugador) {
             if (!nombreJugador) return "";
             const totalTitulos = listaHistorialCampeones.filter(h => h.jugador && h.jugador.trim().toLowerCase() === nombreJugador.trim().toLowerCase()).length;
@@ -1304,7 +1297,6 @@ MAPA_JORNADAS_ESTATICO.B["Jornada 7"] = [
                     const esTop4 = index < 4 ? 'row-top-4' : '';
                     const tr = document.createElement('tr');
                     tr.className = esTop4;
-                    
                     const estrellas = obtenerEstrellasJugador(jugador.nombre);
                     
                     tr.innerHTML = `
@@ -1336,17 +1328,16 @@ MAPA_JORNADAS_ESTATICO.B["Jornada 7"] = [
         }
 
         function actualizarCampo(input, grupo, id, campo) {
-            let valor = input.value;
             let jugador = datosTorneo[grupo].find(j => j.id === id);
             if(!jugador) return;
             
             if (campo === 'nombre') {
-                jugador.nombre = valor;
+                jugador.nombre = input.value;
                 actualizarEtiquetasCalendario();
                 const wrapperEstrellas = document.getElementById(`estrellas-j-${id}`);
-                if(wrapperEstrellas) wrapperEstrellas.innerHTML = obtenerEstrellasJugador(valor);
+                if(wrapperEstras) wrapperEstrellas.innerHTML = obtenerEstrellasJugador(input.value);
             }
-            persistirEnLocalStorage();
+            persistirDatos();
         }
 
         function generarCalendariosHTML() {
@@ -1356,9 +1347,8 @@ MAPA_JORNADAS_ESTATICO.B["Jornada 7"] = [
                 contenedor.innerHTML = "";
 
                 const jornadas = Object.keys(MAPA_JORNADAS_ESTATICO[grupo]);
-
                 jornadas.forEach((jornadaNombre, index) => {
-                    const j = index + 1; // Índice numérico para mantener ids unívocos en inputs
+                    const j = index + 1;
                     const bloqueJornada = document.createElement('div');
                     bloqueJornada.className = 'jornada-block';
                     
@@ -1395,9 +1385,7 @@ MAPA_JORNADAS_ESTATICO.B["Jornada 7"] = [
 
                     bloqueJornada.innerHTML = `
                         <div class="jornada-header">${jornadaNombre}</div>
-                        <div class="matches-list">
-                            ${matchesHTML}
-                        </div>
+                        <div class="matches-list">${matchesHTML}</div>
                         <div class="jornada-descanso-badge" id="descanso-${grupo}-j${j}" style="text-align: center; font-size: 0.9em; opacity: 0.8; margin-top: 12px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.1); color: #00ffcc; font-weight: bold;"></div>
                     `;
                     contenedor.appendChild(bloqueJornada);
@@ -1410,46 +1398,31 @@ MAPA_JORNADAS_ESTATICO.B["Jornada 7"] = [
         function actualizarEtiquetasCalendario() {
             ['A', 'B'].forEach(grupo => {
                 const jornadas = Object.keys(MAPA_JORNADAS_ESTATICO[grupo]);
-
                 jornadas.forEach((jornadaNombre, jIndex) => {
                     const j = jIndex + 1;
                     const partidos = MAPA_JORNADAS_ESTATICO[grupo][jornadaNombre];
-                    
-                    // Identificar quién descansa en esta jornada (quien no esté mapeado en los partidos actuales)
                     const idsJugando = [];
-                    partidos.forEach(p => {
-                        idsJugando.push(p.localId);
-                        idsJugando.push(p.visitanteId);
-                    });
+                    partidos.forEach(p => { idsJugando.push(p.localId); idsJugando.push(p.visitanteId); });
 
                     const jugadorDescansa = datosTorneo[grupo].find(jugador => !idsJugando.includes(jugador.id));
-
                     let descansoEl = document.getElementById(`descanso-${grupo}-j${j}`);
-                    if (descansoEl) {
-                        descansoEl.innerHTML = jugadorDescansa ? `<i class="fa-solid fa-bed"></i> Descansa: ${jugadorDescansa.nombre}` : "";
-                    }
+                    if (descansoEl) descansoEl.innerHTML = jugadorDescansa ? `<i class="fa-solid fa-bed"></i> Descansa: ${jugadorDescansa.nombre}` : "";
 
                     partidos.forEach((partido, mIndex) => {
                         const m = mIndex + 1;
-                        
                         let jugadorL = datosTorneo[grupo].find(jug => jug.id === partido.localId);
                         let jugadorV = datosTorneo[grupo].find(jug => jug.id === partido.visitanteId);
 
                         let localNameEl = document.getElementById(`text-${grupo}-jj${j}-m${m}-l-name`);
                         let visitNameEl = document.getElementById(`text-${grupo}-jj${j}-m${m}-v-name`);
-                        
                         if (localNameEl) localNameEl.innerText = jugadorL ? jugadorL.nombre : "Jugador";
                         if (visitNameEl) visitNameEl.innerText = jugadorV ? jugadorV.nombre : "Jugador";
 
                         let localImgContainer = document.getElementById(`img-${grupo}-j${j}-m${m}-l`);
-                        if (localImgContainer) {
-                            localImgContainer.innerHTML = (jugadorL && jugadorL.img) ? `<img src="${jugadorL.img}">` : `<i class="fa-solid fa-flag"></i>`;
-                        }
+                        if (localImgContainer) localImgContainer.innerHTML = (jugadorL && jugadorL.img) ? `<img src="${jugadorL.img}">` : `<i class="fa-solid fa-flag"></i>`;
 
                         let visitImgContainer = document.getElementById(`img-${grupo}-j${j}-m${m}-v`);
-                        if (visitImgContainer) {
-                            visitImgContainer.innerHTML = (jugadorV && jugadorV.img) ? `<img src="${jugadorV.img}">` : `<i class="fa-solid fa-flag"></i>`;
-                        }
+                        if (visitImgContainer) visitImgContainer.innerHTML = (jugadorV && jugadorV.img) ? `<img src="${jugadorV.img}">` : `<i class="fa-solid fa-flag"></i>`;
                     });
                 });
             });
@@ -1459,6 +1432,7 @@ MAPA_JORNADAS_ESTATICO.B["Jornada 7"] = [
             let el = document.getElementById(idInput);
             if(el) {
                 localStorage.setItem(`superligaa_cal_${idInput}`, el.value);
+                persistirDatos(); // Guarda el estado unificado completo
             }
         }
 
@@ -1467,21 +1441,15 @@ MAPA_JORNADAS_ESTATICO.B["Jornada 7"] = [
                 const jornadas = Object.keys(MAPA_JORNADAS_ESTATICO[grupo]);
                 jornadas.forEach((jornadaNombre, jIndex) => {
                     const j = jIndex + 1;
-                    const partidos = MAPA_JORNADAS_ESTATICO[grupo][jornadaNombre];
-                    
-                    partidos.forEach((partido, mIndex) => {
+                    MAPA_JORNADAS_ESTATICO[grupo][jornadaNombre].forEach((partido, mIndex) => {
                         const m = mIndex + 1;
                         let idL = `input-${grupo}-j${j}-m${m}-l`;
                         let idV = `input-${grupo}-j${j}-m${m}-v`;
-                        
                         let valL = localStorage.getItem(`superligaa_cal_${idL}`);
                         let valV = localStorage.getItem(`superligaa_cal_${idV}`);
                         
-                        let inputL = document.getElementById(idL);
-                        let inputV = document.getElementById(idV);
-
-                        if(valL !== null && inputL) inputL.value = valL;
-                        if(valV !== null && inputV) inputV.value = valV;
+                        if(valL !== null && document.getElementById(idL)) document.getElementById(idL).value = valL;
+                        if(valV !== null && document.getElementById(idV)) document.getElementById(idV).value = valV;
                     });
                 });
             });
@@ -1494,7 +1462,7 @@ MAPA_JORNADAS_ESTATICO.B["Jornada 7"] = [
                     let jugador = datosTorneo[grupo].find(j => j.id === id);
                     if(!jugador) return;
                     jugador.img = e.target.result;
-                    persistirEnLocalStorage();
+                    persistirDatos();
                     renderizarTablas();
                     actualizarEtiquetasCalendario();
                 }
@@ -1504,54 +1472,30 @@ MAPA_JORNADAS_ESTATICO.B["Jornada 7"] = [
 
         function procesarTablasYCruces() {
             ['A', 'B'].forEach(grupo => {
-                // Reiniciamos estadísticas básicas
-                datosTorneo[grupo].forEach(j => {
-                    j.pj = 0; j.g = 0; j.e = 0; j.p = 0; j.gf = 0; j.gc = 0; j.gd = 0; j.pts = 0;
-                });
-
+                datosTorneo[grupo].forEach(j => { j.pj = 0; j.g = 0; j.e = 0; j.p = 0; j.gf = 0; j.gc = 0; j.gd = 0; j.pts = 0; });
                 const jornadas = Object.keys(MAPA_JORNADAS_ESTATICO[grupo]);
 
                 jornadas.forEach((jornadaNombre, jIndex) => {
                     const j = jIndex + 1;
-                    const partidos = MAPA_JORNADAS_ESTATICO[grupo][jornadaNombre];
-
-                    partidos.forEach((partido, mIndex) => {
+                    MAPA_JORNADAS_ESTATICO[grupo][jornadaNombre].forEach((partido, mIndex) => {
                         const m = mIndex + 1;
-                        let idL = `input-${grupo}-j${j}-m${m}-l`;
-                        let idV = `input-${grupo}-j${j}-m${m}-v`;
+                        let valL = localStorage.getItem(`superligaa_cal_input-${grupo}-j${j}-m${m}-l`);
+                        let valV = localStorage.getItem(`superligaa_cal_input-${grupo}-j${j}-m${m}-v`);
 
-                        let valL = localStorage.getItem(`superligaa_cal_${idL}`);
-                        let valV = localStorage.getItem(`superligaa_cal_${idV}`);
-
-                        if (valL !== null && valV !== null && valL !== "" && valV !== "") {
-                            let golesL = parseInt(valL);
-                            let golesV = parseInt(valV);
-
+                        if (valL && valV && valL !== "" && valV !== "") {
+                            let golesL = parseInt(valL); let golesV = parseInt(valV);
                             let jugadorL = datosTorneo[grupo].find(jug => jug.id === partido.localId);
                             let jugadorV = datosTorneo[grupo].find(jug => jug.id === partido.visitanteId);
 
                             if (jugadorL && jugadorV) {
-                                jugadorL.pj++;
-                                jugadorV.pj++;
-                                jugadorL.gf += golesL;
-                                jugadorL.gc += golesV;
-                                jugadorV.gf += golesV;
-                                jugadorV.gc += golesL;
+                                jugadorL.pj++; jugadorV.pj++;
+                                jugadorL.gf += golesL; jugadorL.gc += golesV;
+                                jugadorV.gf += golesV; jugadorV.gc += golesL;
 
-                                if (golesL > golesV) {
-                                    jugadorL.g++;
-                                    jugadorL.pts += 3;
-                                    jugadorV.p++;
-                                } else if (golesV > golesL) {
-                                    jugadorV.g++;
-                                    jugadorV.pts += 3;
-                                    jugadorL.p++;
-                                } else {
-                                    jugadorL.e++;
-                                    jugadorV.e++;
-                                    jugadorL.pts += 1;
-                                    jugadorV.pts += 1;
-                                }
+                                if (golesL > golesV) { jugadorL.g++; jugadorL.pts += 3; jugadorV.p++; }
+                                else if (golesV > golesL) { jugadorV.g++; jugadorV.pts += 3; jugadorL.p++; }
+                                else { jugadorL.e++; jugadorV.e++; jugadorL.pts += 1; jugadorV.pts += 1; }
+                                
                                 jugadorL.gd = jugadorL.gf - jugadorL.gc;
                                 jugadorV.gd = jugadorV.gf - jugadorV.gc;
                             }
@@ -1559,16 +1503,9 @@ MAPA_JORNADAS_ESTATICO.B["Jornada 7"] = [
                     });
                 });
 
-                // Ordenación justa y fija
-                datosTorneo[grupo].sort((a, b) => {
-                    if (b.pts !== a.pts) return b.pts - a.pts;
-                    if (b.gd !== a.gd) return b.gd - a.gd;
-                    if (b.gf !== a.gf) return b.gf - a.gf;
-                    return a.id - b.id;
-                });
+                datosTorneo[grupo].sort((a, b) => (b.pts !== a.pts) ? (b.pts - a.pts) : (b.gd !== a.gd) ? (b.gd - a.gd) : (b.gf !== a.gf) ? (b.gf - a.gf) : (a.id - b.id));
             });
 
-            persistirEnLocalStorage();
             renderizarTablas();
             actualizarEtiquetasCalendario();
 
@@ -1581,8 +1518,8 @@ MAPA_JORNADAS_ESTATICO.B["Jornada 7"] = [
             configurarCeldaBracket('c4-t1', datosTorneo['A'][1]);
             configurarCeldaBracket('c4-t2', datosTorneo['B'][2]);
 
-            persistirEnLocalStorage();
-            alert("¡Tablas calculadas y actualizadas de manera manual basadas en el mapa estático!");
+            persistirDatos();
+            alert("¡Tablas y posiciones sincronizadas correctamente!");
             calcularBrackets();
         }
 
@@ -1606,42 +1543,28 @@ MAPA_JORNADAS_ESTATICO.B["Jornada 7"] = [
         }
 
         function guardarYCalcularBrackets() {
-            const inputsBrackets = [
-                'sc-c1-t1', 'sc-c1-t2', 'sc-c2-t1', 'sc-c2-t2',
-                'sc-c3-t1', 'sc-c3-t2', 'sc-c4-t1', 'sc-c4-t2',
-                'sc-s1-t1', 'sc-s1-t2', 'sc-s2-t1', 'sc-s2-t2',
-                'sc-f-t1', 'sc-f-t2'
-            ];
+            const inputsBrackets = ['sc-c1-t1', 'sc-c1-t2', 'sc-c2-t1', 'sc-c2-t2', 'sc-c3-t1', 'sc-c3-t2', 'sc-c4-t1', 'sc-c4-t2', 'sc-s1-t1', 'sc-s1-t2', 'sc-s2-t1', 'sc-s2-t2', 'sc-f-t1', 'sc-f-t2'];
             inputsBrackets.forEach(id => {
                 let el = document.getElementById(id);
                 if(el) localStorage.setItem(`superligaa_input_bracket_${id}`, el.value);
             });
 
             calcularBrackets();
-            persistirEnLocalStorage();
+            persistirDatos();
         }
 
         function recuperarInputsYLabelsBrackets() {
-            const inputsBrackets = [
-                'sc-c1-t1', 'sc-c1-t2', 'sc-c2-t1', 'sc-c2-t2',
-                'sc-c3-t1', 'sc-c3-t2', 'sc-c4-t1', 'sc-c4-t2',
-                'sc-s1-t1', 'sc-s1-t2', 'sc-s2-t1', 'sc-s2-t2',
-                'sc-f-t1', 'sc-f-t2'
-            ];
+            const inputsBrackets = ['sc-c1-t1', 'sc-c1-t2', 'sc-c2-t1', 'sc-c2-t2', 'sc-c3-t1', 'sc-c3-t2', 'sc-c4-t1', 'sc-c4-t2', 'sc-s1-t1', 'sc-s1-t2', 'sc-s2-t1', 'sc-s2-t2', 'sc-f-t1', 'sc-f-t2'];
             inputsBrackets.forEach(id => {
                 let val = localStorage.getItem(`superligaa_input_bracket_${id}`);
-                let el = document.getElementById(id);
-                if(val !== null && el) el.value = val;
+                if(val !== null && document.getElementById(id)) document.getElementById(id).value = val;
             });
 
             Object.keys(imagenesBrackets).forEach(idFila => {
                 let txtGuardado = localStorage.getItem(`superligaa_txt_bracket_${idFila}`);
-                let txtEl = document.getElementById(idFila);
-                let imgEl = document.getElementById(idFila + "-img");
-
-                if(txtGuardado && txtEl) txtEl.innerText = txtGuardado;
-                if(imgEl) {
-                    imgEl.innerHTML = imagenesBrackets[idFila] ? `<img src="${imagenesBrackets[idFila]}">` : `<i class="fa-solid fa-flag"></i>`;
+                if(txtGuardado && document.getElementById(idFila)) document.getElementById(idFila).innerText = txtGuardado;
+                if(document.getElementById(idFila + "-img")) {
+                    document.getElementById(idFila + "-img").innerHTML = imagenesBrackets[idFila] ? `<img src="${imagenesBrackets[idFila]}">` : `<i class="fa-solid fa-flag"></i>`;
                 }
             });
         }
@@ -1651,20 +1574,12 @@ MAPA_JORNADAS_ESTATICO.B["Jornada 7"] = [
             avanzarLlave('c2-t1', 'c2-t2', 'sc-c2-t1', 'sc-c2-t2', 's1-t2', 'Ganador Partido 2');
             avanzarLlave('c3-t1', 'c3-t2', 'sc-c3-t1', 'sc-c3-t2', 's2-t1', 'Ganador Partido 3');
             avanzarLlave('c4-t1', 'c4-t2', 'sc-c4-t1', 'sc-c4-t2', 's2-t2', 'Ganador Partido 4');
-
             avanzarLlave('s1-t1', 's1-t2', 'sc-s1-t1', 'sc-s1-t2', 'f-t1', 'Ganador S1');
             avanzarLlave('s2-t1', 's2-t2', 'sc-s2-t1', 'sc-s2-t2', 'f-t2', 'Ganador S2');
 
             let campeon = determinarGanador('f-t1', 'f-t2', 'sc-f-t1', 'sc-f-t2');
             const txtCamp = document.getElementById('text-campeon');
-            
-            if(txtCamp) {
-                if(campeon && campeon.nombre !== 'Ganador S1' && campeon.nombre !== 'Ganador S2') {
-                    txtCamp.innerHTML = `<i class='fa-solid fa-crown'></i> Campeón: ${campeon.nombre}`;
-                } else {
-                    txtCamp.innerText = "";
-                }
-            }
+            if(txtCamp) txtCamp.innerHTML = (campeon && campeon.nombre !== 'Ganador S1' && campeon.nombre !== 'Ganador S2') ? `<i class='fa-solid fa-crown'></i> Campeón: ${campeon.nombre}` : "";
         }
 
         function avanzarLlave(t1Id, t2Id, s1Id, s2Id, destinoId, porDefecto) {
@@ -1688,20 +1603,14 @@ MAPA_JORNADAS_ESTATICO.B["Jornada 7"] = [
         }
 
         function determinarGanador(t1Id, t2Id, s1Id, s2Id) {
-            let t1El = document.getElementById(t1Id);
-            let t2El = document.getElementById(t2Id);
-            let s1El = document.getElementById(s1Id);
-            let s2El = document.getElementById(s2Id);
+            let t1El = document.getElementById(t1Id); let t2El = document.getElementById(t2Id);
+            let s1El = document.getElementById(s1Id); let s2El = document.getElementById(s2Id);
             if(!t1El || !t2El || !s1El || !s2El) return null;
 
-            let t1 = t1El.innerText;
-            let t2 = t2El.innerText;
-            let s1 = parseInt(s1El.value);
-            let s2 = parseInt(s2El.value);
-
+            let s1 = parseInt(s1El.value); let s2 = parseInt(s2El.value);
             if (!isNaN(s1) && !isNaN(s2)) {
-                if (s1 > s2) return { nombre: t1, img: imagenesBrackets[t1Id] };
-                if (s2 > s1) return { nombre: t2, img: imagenesBrackets[t2Id] };
+                if (s1 > s2) return { nombre: t1El.innerText, img: imagenesBrackets[t1Id] };
+                if (s2 > s1) return { nombre: t2El.innerText, img: imagenesBrackets[t2Id] };
             }
             return null;
         }
@@ -1712,12 +1621,11 @@ MAPA_JORNADAS_ESTATICO.B["Jornada 7"] = [
             contenedor.innerHTML = "";
 
             if(listaHistorialCampeones.length === 0) {
-                contenedor.innerHTML = `<p class="placeholder-text" style="grid-column: 1/-1; text-align: center; padding: 40px 0;">No hay campeones registrados en el historial todavía.</p>`;
+                contenedor.innerHTML = `<p class="placeholder-text" style="grid-column: 1/-1; text-align: center; padding: 40px 0;">No hay campeones registrados.</p>`;
                 return;
             }
 
             listaHistorialCampeones.sort((a,b) => parseInt(b.year) - parseInt(a.year));
-
             listaHistorialCampeones.forEach(item => {
                 const card = document.createElement('div');
                 card.className = 'history-card';
@@ -1752,17 +1660,8 @@ MAPA_JORNADAS_ESTATICO.B["Jornada 7"] = [
         }
 
         function agregarNuevoCampeonHistorial() {
-            const nuevoCampeon = {
-                id: Date.now(),
-                year: "2025",
-                jugador: "Nuevo Campeón",
-                equipo: "Nombre de Equipo",
-                escudo: "",
-                subcampeon: "-",
-                resultado: "-"
-            };
-            listaHistorialCampeones.push(nuevoCampeon);
-            persistirEnLocalStorage();
+            listaHistorialCampeones.push({ id: Date.now(), year: "2026", jugador: "Nuevo Campeón", equipo: "Equipo", escudo: "", subcampeon: "-", resultado: "-" });
+            persistirDatos();
             renderizarHistorialCampeones();
             renderizarTablas();
         }
@@ -1770,7 +1669,7 @@ MAPA_JORNADAS_ESTATICO.B["Jornada 7"] = [
         function eliminarCampeonHistorial(id) {
             if(confirm("¿Eliminar este registro del historial?")) {
                 listaHistorialCampeones = listaHistorialCampeones.filter(h => h.id !== id);
-                persistirEnLocalStorage();
+                persistirDatos();
                 renderizarHistorialCampeones();
                 renderizarTablas();
             }
@@ -1780,10 +1679,8 @@ MAPA_JORNADAS_ESTATICO.B["Jornada 7"] = [
             let item = listaHistorialCampeones.find(h => h.id === id);
             if(item) {
                 item[campo] = valor;
-                persistirEnLocalStorage();
-                if(campo === 'jugador') {
-                    renderizarTablas();
-                }
+                persistirDatos();
+                if(campo === 'jugador') renderizarTablas();
             }
         }
 
@@ -1792,35 +1689,23 @@ MAPA_JORNADAS_ESTATICO.B["Jornada 7"] = [
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     let item = listaHistorialCampeones.find(h => h.id === id);
-                    if(item) {
-                        item.escudo = e.target.result;
-                        persistirEnLocalStorage();
-                        renderizarHistorialCampeones();
-                    }
+                    if(item) { item.escudo = e.target.result; persistirDatos(); renderizarHistorialCampeones(); }
                 }
                 reader.readAsDataURL(input.files[0]);
             }
         }
 
         function reiniciarTorneo() {
-            if(confirm("¿Estás completamente seguro de que quieres borrar todos los datos del torneo? Esto no afectará al Historial de Campeones.")) {
-                Object.keys(localStorage).forEach(key => {
-                    if (key !== 'superligaa_historialCampeones') {
-                        localStorage.removeItem(key);
-                    }
-                });
+            if(confirm("¿Borrar todos los datos del torneo? El Historial se mantendrá intacto.")) {
+                Object.keys(localStorage).forEach(key => { if (key !== 'superligaa_historialCampeones') localStorage.removeItem(key); });
                 datosTorneo = JSON.parse(JSON.stringify(estructuraLimpia));
-                imagenesBrackets = {
-                    "c1-t1": "", "c1-t2": "", "c2-t1": "", "c2-t2": "",
-                    "c3-t1": "", "c3-t2": "", "c4-t1": "", "c4-t2": "",
-                    "s1-t1": "", "s1-t2": "", "s2-t1": "", "s2-t2": "",
-                    "f-t1": "", "f-t2": ""
-                };
+                imagenesBrackets = { "c1-t1": "", "c1-t2": "", "c2-t1": "", "c2-t2": "", "c3-t1": "", "c3-t2": "", "c4-t1": "", "c4-t2": "", "s1-t1": "", "s1-t2": "", "s2-t1": "", "s2-t2": "", "f-t1": "", "f-t2": "" };
+                persistirDatos();
                 renderizarTablas();
                 generarCalendariosHTML();
                 recuperarInputsYLabelsBrackets();
                 calcularBrackets();
-                alert("Torneo actual reiniciado correctamente. El Historial se ha mantenido intacto.");
+                alert("Torneo reiniciado correctamente.");
             }
         }
 
@@ -1834,55 +1719,27 @@ MAPA_JORNADAS_ESTATICO.B["Jornada 7"] = [
             
             const titleEl = document.getElementById('main-view-title');
             if(viewId === 'historial') {
-                const nHist = document.getElementById('nav-historial');
-                const tHist = document.getElementById('tab-historial-btn');
-                if(nHist) nHist.classList.add('active');
-                if(tHist) tHist.classList.add('active-tab');
+                if(document.getElementById('nav-historial')) document.getElementById('nav-historial').classList.add('active');
+                if(document.getElementById('tab-historial-btn')) document.getElementById('tab-historial-btn').classList.add('active-tab');
                 if(titleEl) titleEl.innerText = "Historial Histórico";
             } else {
                 if(titleEl) titleEl.innerText = "Mundialito 2026";
                 if(viewId === 'grupos') {
-                    const nG = document.getElementById('nav-grupos');
-                    const tG = document.getElementById('tab-grupos-btn');
-                    if(nG) nG.classList.add('active');
-                    if(tG) tG.classList.add('active-tab');
+                    if(document.getElementById('nav-grupos')) document.getElementById('nav-grupos').classList.add('active');
+                    if(document.getElementById('tab-grupos-btn')) document.getElementById('tab-grupos-btn').classList.add('active-tab');
                 } else if(viewId === 'jornadas') {
-                    const nJ = document.getElementById('nav-jornadas');
-                    const tJ = document.getElementById('tab-jornadas-btn');
-                    if(nJ) nJ.classList.add('active');
-                    if(tJ) tJ.classList.add('active-tab');
+                    if(document.getElementById('nav-jornadas')) document.getElementById('nav-jornadas').classList.add('active');
+                    if(document.getElementById('tab-jornadas-btn')) document.getElementById('tab-jornadas-btn').classList.add('active-tab');
                 } else if(viewId === 'eliminatorio') {
-                    const nE = document.getElementById('nav-eliminatorio');
-                    const tE = document.getElementById('tab-eliminatorio-btn');
-                    if(nE) nE.classList.add('active');
-                    if(tE) tE.classList.add('active-tab');
+                    if(document.getElementById('nav-eliminatorio')) document.getElementById('nav-eliminatorio').classList.add('active');
+                    if(document.getElementById('tab-eliminatorio-btn')) document.getElementById('tab-eliminatorio-btn').classList.add('active-tab');
                 }
             }
-
-            const sidebar = document.getElementById('sidebar');
-            if(sidebar && sidebar.classList.contains('open')) toggleSidebar();
+            if(document.getElementById('sidebar') && document.getElementById('sidebar').classList.contains('open')) toggleSidebar();
         }
 
-        window.onload = function() {
-            let memoriaDatos = localStorage.getItem('superligaa_datosTorneo');
-            let memoriaImagenes = localStorage.getItem('superligaa_imagenesBrackets');
-            let memoriaHistorial = localStorage.getItem('superligaa_historialCampeones');
-
-            if(memoriaHistorial) listaHistorialCampeones = JSON.parse(memoriaHistorial);
-            
-            if(memoriaDatos) {
-                datosTorneo = JSON.parse(memoriaDatos);
-            } else {
-                datosTorneo = JSON.parse(JSON.stringify(estructuraLimpia));
-            }
-            if(memoriaImagenes) imagenesBrackets = JSON.parse(memoriaImagenes);
-
-            renderizarTablas();
-            generarCalendariosHTML();
-            recuperarInputsYLabelsBrackets();
-            calcularBrackets();
-            renderizarHistorialCampeones();
-        };
+        // Evento de arranque optimizado asíncronamente
+        window.onload = cargarDatosIniciales;
 </script>
 </body>
 </html>
